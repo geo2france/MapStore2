@@ -6,7 +6,7 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { identity, trim, fill, findIndex, get, isArray, isNil, isString, isPlainObject, includes } from 'lodash';
+import { identity, find, trim, fill, findIndex, get, isArray, isNil, isString, isPlainObject, includes } from 'lodash';
 
 import {
     findGeometryProperty,
@@ -18,6 +18,8 @@ import {
 } from './ogc/WFS/base';
 
 import { applyDefaultToLocalizedString } from '../components/I18N/LocalizedString';
+
+import EditorRegistry from "./featuregrid/EditorRegistry";
 
 const getGeometryName = (describe) => get(findGeometryProperty(describe), "name");
 const getPropertyName = (name, describe) => name === "geometry" ? getGeometryName(describe) : name;
@@ -115,6 +117,17 @@ export const getCurrentPaginationOptions = ({ startPage, endPage }, oldPages, si
     return { startIndex: nPs[0] * size, maxFeatures: needPages * size };
 };
 
+export const controlFieldEditable = (editable, customEditorOptions, regexInfos) => {
+    let isEditable = editable;
+    let hasCustomOptions = find(customEditorOptions, (r) => EditorRegistry.regexTestor(r.regex, regexInfos));
+    // use allowEdit only in EDIT mode and only if allowEdit exists for this field
+    if (!hasCustomOptions) return isEditable;
+
+    if (hasCustomOptions.hasOwnProperty("allowEdit") && isEditable) {
+        isEditable = hasCustomOptions.allowEdit;
+    }
+    return isEditable;
+};
 
 /**
  * Utility function to get from a describeFeatureType response the columns to use in the react-data-grid
@@ -126,6 +139,7 @@ export const getCurrentPaginationOptions = ({ startPage, endPage }, oldPages, si
  * @returns
  */
 export const featureTypeToGridColumns = (
+    {customEditorOptions, url, typeName},
     describe,
     columnSettings = {},
     fields = [],
@@ -134,6 +148,7 @@ export const featureTypeToGridColumns = (
     getAttributeFields(describe).filter(e => !(columnSettings[e.name] && columnSettings[e.name].hide)).map((desc) => {
         const option = options.find(o => o.name === desc.name);
         const field = fields.find(f => f.name === desc.name);
+        const isEditable = controlFieldEditable(editable, customEditorOptions, { url, typeName, attribute: desc.name });
         return {
             sortable,
             key: desc.name,
@@ -144,9 +159,9 @@ export const featureTypeToGridColumns = (
             headerRenderer: getHeaderRenderer(),
             showTitleTooltip: !!option?.description,
             resizable,
-            editable,
+            editable: isEditable,
             filterable,
-            editor: getEditor(desc, field),
+            editor: isEditable ? getEditor(desc, field) : null,
             formatter: getFormatter(desc, field),
             filterRenderer: getFilterRenderer(desc, field)
         };

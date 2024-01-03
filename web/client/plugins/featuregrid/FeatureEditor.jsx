@@ -189,7 +189,7 @@ const FeatureDock = (props = {
     const items = props?.items ?? [];
     const toolbarItems = items.filter(({target}) => target === 'toolbar');
     const filterRenderers = useMemo(() => getFilterRenderers(props.describe, props.fields), [props.describe, props.fields]);
-    return (
+        return (
         <div className={"feature-grid-wrapper"}>
             <Dock  {...dockProps} onSizeChange={size => { props.onSizeChange(size, dockProps); }}>
                 {props.open &&
@@ -220,6 +220,9 @@ const FeatureDock = (props = {
                                     enableColumnFilters={props.enableColumnFilters}
                                     emptyRowsView={getEmptyRowsView()}
                                     focusOnEdit={props.focusOnEdit}
+                                    onCheckCellIsEditable={({column}) => {
+                                        return column.editable;
+                                    }}
                                     newFeatures={props.newFeatures}
                                     changes={props.changes}
                                     mode={props.mode}
