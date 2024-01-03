@@ -55,12 +55,13 @@ module.exports = {
     clean: () => {
         Editors = {};
     },
-    getCustomEditor: ({attribute, url, typeName}, rules = [], {type, generalProps = {}, props}) => {
-        const editor = find(rules, (r) => testRule(r.regex, {attribute, url, typeName }));
+    getCustomEditor: (editor, {type, generalProps = {}, props}) => {
+        // editor contain allowEdit by field
         if (!!editor) {
             const result = getEditor(type, editor.editor, {...props, ...generalProps, ...editor.editorProps || {}});
             return result;
         }
         return null;
-    }
+    },
+    regexTestor: testRule
 };
