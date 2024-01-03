@@ -1932,6 +1932,7 @@
                 "syncOnMap": "Sincronizza la mappa con i filtri",
                 "enableTimeSync": "Sincronizza con l'istante o l'intervallo temporale selezionato",
                 "disableTimeSync": "Non sincronizzare con l'istante o l'intervallo temporale selezionato",
+                "restrictedByArea": "Vista limitata da un'area",
                 "createNewChart": "crea un grafico per il livello selezionato",
                 "enableSnapping": "Attiva snapping",
                 "disableSnapping": "Disattiva snapping",

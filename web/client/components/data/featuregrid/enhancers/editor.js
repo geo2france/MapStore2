@@ -5,7 +5,7 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
 */
-import { isNil } from 'lodash';
+import { isNil, find } from 'lodash';
 import { compose, createEventHandler, defaultProps, withHandlers, withPropsOnChange } from 'recompose';
 
 import EditorRegistry from '../../../../utils/featuregrid/EditorRegistry';
@@ -84,10 +84,11 @@ const featuresToGrid = compose(
         props => ({displayFilters: props.enableColumnFilters})
     ),
     withPropsOnChange(
-        ["editingAllowedRoles", "editingAllowedGroups", "virtualScroll"],
+        ["editingAllowedRoles", "editingAllowedGroups", "editingAttributesAllowedGroups", "virtualScroll"],
         props => ({
             editingAllowedRoles: props.editingAllowedRoles,
             editingAllowedGroups: props.editingAllowedGroups,
+            editingAttributesAllowedGroups: props.editingAttributesAllowedGroups,            
             initPlugin: props.initPlugin
         })
     ),
@@ -120,9 +121,11 @@ const featuresToGrid = compose(
     ),
     withPropsOnChange(
         ["newFeatures", "changes", "focusOnEdit"],
-        props => ({
-            isFocused: props.focusOnEdit && (props.changes && Object.keys(props.changes).length > 0 || props.newFeatures && props.newFeatures.length > 0 )
-        })
+        props => {
+            return {
+                isFocused: props.focusOnEdit && (props.changes && Object.keys(props.changes).length > 0 || props.newFeatures && props.newFeatures.length > 0 )
+            }
+        }
     ),
     withPropsOnChange(
         ["features", "newFeatures", "isFocused", "virtualScroll", "pagination"],
@@ -144,38 +147,49 @@ const featuresToGrid = compose(
                 // return empty component if no filter renderer is defined, to avoid failures
                 return () => null;
             };
+            const getToolsCols = getToolColumns(props.tools, props.rowGetter, props.describeFeatureType, props.actionOpts, getFilterRendererFunc);
+            const colsOptions = {
+                editable: props.mode === "EDIT",
+                sortable: props.sortable && !props.isFocused,
+                defaultSize: props.defaultSize,
+                options: props.options?.propertyName
+            };
 
-            const result = ({
-                columns: getToolColumns(props.tools, props.rowGetter, props.describeFeatureType, props.actionOpts, getFilterRendererFunc)
-                    .concat(featureTypeToGridColumns(props.describeFeatureType, props.columnSettings, props.fields, {
-                        editable: props.mode === "EDIT",
-                        sortable: props.sortable && !props.isFocused,
-                        defaultSize: props.defaultSize,
-                        options: props.options?.propertyName
-                    }, {
-                        getHeaderRenderer,
-                        getEditor: (desc) => {
-                            const generalProps = {
-                                onTemporaryChanges: props.gridEvents && props.gridEvents.onTemporaryChanges,
-                                autocompleteEnabled: props.autocompleteEnabled,
-                                url: props.url,
-                                typeName: props.typeName
-                            };
-                            const regexProps = {attribute: desc.name, url: props.url, typeName: props.typeName};
-                            const rules = props.customEditorsOptions && props.customEditorsOptions.rules || [];
-                            const editorProps = {type: desc.localType, generalProps, props};
-                            const editor = EditorRegistry.getCustomEditor(regexProps, rules, editorProps);
+            const customEditorInfos = {
+                customEditorOptions: props.customEditorsOptions && props.customEditorsOptions.rules || [],
+                url: props.url,
+                typeName: props.typeName,
+                isEditingAllowed: props.isEditingAllowed,
+                isAttributeEditor: props.isAttributeEditor,
+                isAdmin: props.isAdmin
+            };
 
-                            if (!isNil(editor)) {
-                                return editor;
-                            }
-                            return props.editors(desc.localType, generalProps);
-                        },
-                        getFilterRenderer: getFilterRendererFunc,
-                        getFormatter: (desc) => getFormatter(desc, (props.fields ?? []).find(f => f.name === desc.name)),
-                        isWithinAttrTbl: props.isWithinAttrTbl
-                    }))
+            const featureTypeToCols = featureTypeToGridColumns(customEditorInfos, props.describeFeatureType, props.columnSettings, props.fields, colsOptions, {
+                getHeaderRenderer,
+                getEditor: (desc, field) => {
+                    const generalProps = {
+                        onTemporaryChanges: props.gridEvents && props.gridEvents.onTemporaryChanges,
+                        autocompleteEnabled: props.autocompleteEnabled,
+                        url: props.url,
+                        typeName: props.typeName,
+                        disabled: !field.editable && !props.select.filter(x => x._new)[0]
+                    };
+                    const regexProps = {attribute: desc.name, url: props.url, typeName: props.typeName};
+                    const rules = props.customEditorsOptions && props.customEditorsOptions.rules || [];
+                    const editorProps = {type: desc.localType, generalProps, props};
+                    const editor = EditorRegistry.getCustomEditor(regexProps, rules, editorProps);
+
+                    if (!isNil(editor)) {
+                        return editor;
+                    }
+                    return props.editors(desc.localType, generalProps);
+                },
+                getFilterRenderer: getFilterRendererFunc,
+                getFormatter: (desc) => getFormatter(desc, (props.fields ?? []).find(f => f.name === desc.name), { dateFormats: props.dateFormats })
             });
+
+            const result = { columns: getToolsCols.concat(featureTypeToCols) };
+
             return result;
         }
     ),
@@ -186,7 +200,7 @@ const featuresToGrid = compose(
             // bind and get proper grid events from gridEvents object
             let {
                 onRowsSelected = () => {},
-                onRowsDeselected = () => {},
+                onRowsDeselected = () => { },
                 onRowsToggled = () => {},
                 ...gridEvents} = getGridEvents(props.gridEvents, props.rowGetter, props.describeFeatureType, props.actionOpts, props.columns);
 

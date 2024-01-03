@@ -18,11 +18,11 @@ import Grid from '../../components/data/featuregrid/FeatureGrid';
 import BorderLayout from '../../components/layout/BorderLayout';
 import { toChangesMap} from '../../utils/FeatureGridUtils';
 import { sizeChange, setUp, setSyncTool } from '../../actions/featuregrid';
-import {mapLayoutValuesSelector} from '../../selectors/maplayout';
+import { mapLayoutValuesSelector } from '../../selectors/maplayout';
 import {paginationInfo, describeSelector, wfsURLSelector, typeNameSelector, isSyncWmsActive} from '../../selectors/query';
-import {modeSelector, changesSelector, newFeaturesSelector, hasChangesSelector, selectedLayerFieldsSelector, selectedFeaturesSelector, getDockSize} from '../../selectors/featuregrid';
-
-import {getPanels, getHeader, getFooter, getDialogs, getEmptyRowsView, getFilterRenderers} from './panels/index';
+import {isAttributesEditorSelector, isEditingAllowedSelector, modeSelector, changesSelector, newFeaturesSelector, hasChangesSelector, selectedLayerFieldsSelector, selectedFeaturesSelector, getDockSize, restrictedAreaSelector} from '../../selectors/featuregrid';
+import { isAdminUserSelector, userSelector } from '../../selectors/security';
+import { getPanels, getHeader, getFooter, getDialogs, getEmptyRowsView, getFilterRenderers } from './panels/index';
 import {gridTools, gridEvents, pageEvents, toolbarEvents} from './index';
 
 const EMPTY_ARR = [];
@@ -188,10 +188,8 @@ const FeatureDock = (props = {
     };
     const items = props?.items ?? [];
     const toolbarItems = items.filter(({target}) => target === 'toolbar');
-    const filterRenderers = useMemo(() => {
-        return getFilterRenderers(props.describe, props.fields, props.isWithinAttrTbl);
-    }, [props.describe, props.fields]);
-    return (
+    const filterRenderers = useMemo(() => getFilterRenderers(props.describe, props.fields), [props.describe, props.fields]);
+        return (
         <div className={"feature-grid-wrapper"}>
             <Dock  {...dockProps} onSizeChange={size => { props.onSizeChange(size, dockProps); }}>
                 {props.open &&
@@ -206,6 +204,7 @@ const FeatureDock = (props = {
                                     toolbarItems,
                                     hideCloseButton: props.hideCloseButton,
                                     hideLayerTitle: props.hideLayerTitle,
+                                    editingAttributesAllowedGroups: props.editingAttributesAllowedGroups,
                                     pluginCfg: props.pluginCfg
                                 })}
                                 columns={getPanels(props.tools)}
@@ -218,11 +217,15 @@ const FeatureDock = (props = {
                                     customEditorsOptions={props.customEditorsOptions}
                                     autocompleteEnabled={props.autocompleteEnabled}
                                     url={props.url}
+                                    user={props.user}
                                     typeName={props.typeName}
                                     filterRenderers={filterRenderers}
                                     enableColumnFilters={props.enableColumnFilters}
                                     emptyRowsView={getEmptyRowsView()}
                                     focusOnEdit={props.focusOnEdit}
+                                    onCheckCellIsEditable={({column}) => {
+                                        return column.editable;
+                                    }}
                                     newFeatures={props.newFeatures}
                                     changes={props.changes}
                                     mode={props.mode}
@@ -245,6 +248,9 @@ const FeatureDock = (props = {
                                     size={props.size}
                                     actionOpts={{maxZoom}}
                                     dateFormats={props.dateFormats}
+                                    isEditingAllowed={props.isEditingAllowed}
+                                    isAttributeEditor={props.isAttributeEditor}
+                                    isAdmin={props.isAdmin}
                                 />
                             </BorderLayout> }
 
@@ -255,6 +261,9 @@ const FeatureDock = (props = {
 };
 export const selector = createStructuredSelector({
     open: state => get(state, "featuregrid.open"),
+    isEditingAllowed: isEditingAllowedSelector,
+    isAttributeEditor: isAttributesEditorSelector,
+    restrictedArea: restrictedAreaSelector,
     customEditorsOptions: state => get(state, "featuregrid.customEditorsOptions"),
     autocompleteEnabled: state => get(state, "queryform.autocompleteEnabled"),
     url: state => wfsURLSelector(state),
@@ -273,7 +282,9 @@ export const selector = createStructuredSelector({
     enableColumnFilters: state => get(state, 'featuregrid.enableColumnFilters'),
     pagination: createStructuredSelector(paginationInfo),
     pages: state => get(state, 'featuregrid.pages'),
-    size: state => get(state, 'featuregrid.pagination.size')
+    size: state => get(state, 'featuregrid.pagination.size'),
+    isAdmin: isAdminUserSelector,
+    user: userSelector
 });
 
 const EditorPlugin = compose(

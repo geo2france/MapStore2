@@ -33,6 +33,11 @@ class FeatureGrid extends React.PureComponent {
     static propTypes = {
         autocompleteEnabled: PropTypes.bool,
         editingAllowedRoles: PropTypes.array,
+        editingAttributesAllowedGroups: PropTypes.array,
+        restrictedArea: PropTypes.object,
+        restrictedAreaUrl: PropTypes.string,
+        restrictedAreaOperator: PropTypes.string,
+        isAdmin: PropTypes.array,
         gridOpts: PropTypes.object,
         changes: PropTypes.object,
         selectBy: PropTypes.object,
@@ -47,7 +52,8 @@ class FeatureGrid extends React.PureComponent {
         tools: PropTypes.array,
         gridEvents: PropTypes.object,
         virtualScroll: PropTypes.bool,
-        maxStoredPages: PropTypes.number
+        maxStoredPages: PropTypes.number,
+        user: PropTypes.object
     };
     static childContextTypes = {
         isModified: PropTypes.func,
@@ -56,6 +62,11 @@ class FeatureGrid extends React.PureComponent {
     };
     static defaultProps = {
         editingAllowedRoles: ["ADMIN"],
+        editingAttributesAllowedGroups: [],
+        restrictedArea: {},
+        restrictedAreaUrl: "",
+        restrictedAreaOperator: "CONTAINS",
+        isAdmin: false,
         autocompleteEnabled: false,
         gridComponent: AdaptiveGrid,
         changes: {},
@@ -67,7 +78,8 @@ class FeatureGrid extends React.PureComponent {
         tools: [],
         showDragHandle: false,
         virtualScroll: false,
-        maxStoredPages: 5
+        maxStoredPages: 5,
+        user: {}
     };
     constructor(props) {
         super(props);
@@ -78,7 +90,7 @@ class FeatureGrid extends React.PureComponent {
             isModified: (id, key) => {
                 return this.props.changes.hasOwnProperty(id) &&
                     this.props.changes[id].hasOwnProperty(key);
-            },
+                            },
             isProperty: (k) => k === "geometry" || isProperty(k, this.props.describeFeatureType),
             isValid: (val, key) => this.props.describeFeatureType ? isValidValueForPropertyName(val, key, this.props.describeFeatureType) : true
         };

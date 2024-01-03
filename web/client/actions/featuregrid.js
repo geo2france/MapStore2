@@ -7,6 +7,7 @@
 */
 
 export const SET_UP = 'FEATUREGRID:SET_UP';
+export const SET_RESTRICTED_AREA = "FEATUREGRID:SET_RESTRICTED_AREA";
 export const SELECT_FEATURES = 'FEATUREGRID:SELECT_FEATURES';
 export const DESELECT_FEATURES = 'FEATUREGRID:DESELECT_FEATURES';
 export const CLEAR_SELECTION = 'FEATUREGRID:CLEAR_SELECTION';
@@ -53,6 +54,7 @@ export const UPDATE_EDITORS_OPTIONS = 'FEATUREGRID:UPDATE_EDITORS_OPTIONS';
 export const LAUNCH_UPDATE_FILTER_FUNC = 'FEATUREGRID:LAUNCH_UPDATE_FILTER_FUNC';
 export const SET_SYNC_TOOL = 'FEATUREGRID:SET_SYNC_TOOL';
 export const SET_VIEWPORT_FILTER = 'FEATUREGRID:SET_VIEWPORT_FILTER';
+export const GRID_ROW_UPDATE = "FEATUREGRID:GRID_ROW_UPDATE";
 
 export const MODES = {
     EDIT: "EDIT",
@@ -255,17 +257,26 @@ export function toggleViewMode() {
         mode: MODES.VIEW
     };
 }
-export function featureModified(features, updated) {
+export function featureModified(features, updated, user = {}) {
     return {
         type: FEATURES_MODIFIED,
         features,
         updated
     };
 }
-export function createNewFeatures(features) {
+
+export function gridRowUpdate(features, updated) {
+    return {
+        type: GRID_ROW_UPDATE,
+        features,
+        updated
+    };
+}
+export function createNewFeatures(features, user = {}) {
     return {
         type: CREATE_NEW_FEATURE,
-        features
+        features,
+        user
     };
 }
 export function saveChanges() {
@@ -403,4 +414,9 @@ export const setSyncTool = (syncWmsFilter) => ({
 export const setViewportFilter = (viewportFilter) => ({
     type: SET_VIEWPORT_FILTER,
     value: viewportFilter
+});
+
+export const setRestrictedArea = (area) => ({
+    type: SET_RESTRICTED_AREA,
+    area: area
 });

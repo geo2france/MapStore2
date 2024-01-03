@@ -433,7 +433,8 @@
                         "alwaysVisible": true
                     }
                 }
-            }, "Home", "FeatureEditor",
+            }, "Home",
+            "FeatureEditor",
             "LayerDownload",
             {
               "name": "QueryPanel",

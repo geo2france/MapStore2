@@ -105,8 +105,8 @@ class DropDownEditor extends AttributeEditor {
         const props = assign({}, {...this.props}, {
             data,
             defaultOption: this.props.defaultOption || head(this.props.values)
-        });
-        return <ControlledCombobox {...props} filter={this.props.filter}/>;
+        });        
+        return <ControlledCombobox disabled={!this.props?.column?.editable} {...props} filter={this.props.filter}/>;
     }
 }
 

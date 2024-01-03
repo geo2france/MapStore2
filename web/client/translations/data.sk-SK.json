@@ -1671,7 +1671,8 @@
                 "syncOnMap": "Synchronizovať mapu s filtrom",
                 "enableTimeSync": "Synchronizovať s vybraným časom alebo časovým intervalom",
                 "disableTimeSync": "Nesynchronizovať s vybraným časom alebo intervalom",
-                "createNewChart": "Vytvoriť graf pre vybranú vrstvu"
+                "createNewChart": "Vytvoriť graf pre vybranú vrstvu",
+                "restrictedByArea": "Zobrazenie obmedzené na jednu zónu"
             }
         },
         "layerdownload": {

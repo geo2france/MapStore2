@@ -1431,6 +1431,7 @@
         "syncOnMap": "Synkronoi kartta suodattimen kanssa",
         "enableTimeSync": "Synkronoi valitun ajan tai aikavälin kanssa",
         "disableTimeSync": "Älä synkronoi valitun ajan tai aikavälin kanssa",
+        "restrictedByArea": "Alueen rajoittama näkymä",
         "createNewChart": "Luo kaavio valitulle tasolle"
       }
     },

@@ -80,6 +80,7 @@ class DateTimeEditor extends AttributeEditor {
         return (<UTCDateTimePicker
             {...this.props}
             type={dataType}
+            disabled={!this.props?.column?.editable}
             defaultValue={value}
             value={value}
             onChange={this.onChange}

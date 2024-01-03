@@ -1971,6 +1971,7 @@
                 "syncOnMap": "Karte mit Filter synchronisieren",
                 "enableTimeSync": "Mit der ausgewählten Zeit oder dem ausgewählten Zeitintervall synchronisieren",
                 "disableTimeSync": "Nicht mit der ausgewählten Zeit oder dem ausgewählten Intervall synchronisieren",
+                "restrictedByArea": "Durch eine Fläche eingeschränkte Sicht",
                 "createNewChart": "Diagramm für die ausgewählte Ebene erstellen",
                 "enableSnapping": "Schnappen aktivieren",
                 "disableSnapping": "Schnappen deaktivieren",

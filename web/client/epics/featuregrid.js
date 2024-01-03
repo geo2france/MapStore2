@@ -11,7 +11,9 @@ import {get, head, isEmpty, find, castArray, includes, reduce} from 'lodash';
 import { LOCATION_CHANGE } from 'connected-react-router';
 import axios from '../libs/ajax';
 import bbox from '@turf/bbox';
-import { createChangesTransaction, getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages  } from '../utils/FeatureGridUtils';
+import booleanIntersects from "@turf/boolean-intersects";
+import { fidFilter } from '../utils/ogc/Filter/filter';
+import { getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages, getAttributesFromUserInfos  } from '../utils/FeatureGridUtils';
 
 import assign from 'object-assign';
 import {
@@ -24,7 +26,7 @@ import {
 import requestBuilder from '../utils/ogc/WFST/RequestBuilder';
 import { findGeometryProperty } from '../utils/ogc/WFS/base';
 import { FEATURE_INFO_CLICK, HIDE_MAPINFO_MARKER, closeIdentify, hideMapinfoMarker } from '../actions/mapInfo';
-
+import { LOGIN_SUCCESS, LOGOUT } from "../actions/security"
 import {
     query,
     QUERY,
@@ -104,12 +106,17 @@ import {
     ACTIVATE_TEMPORARY_CHANGES,
     disableToolbar,
     FEATURES_MODIFIED,
+    GRID_ROW_UPDATE,
     deactivateGeometryFilter as deactivateGeometryFilterAction,
     setSelectionOptions,
     setPagination,
     launchUpdateFilterFunc,
     LAUNCH_UPDATE_FILTER_FUNC, SET_LAYER,
-    SET_VIEWPORT_FILTER, setViewportFilter
+    SET_VIEWPORT_FILTER, setViewportFilter,
+    featureModified,
+    setRestrictedArea,
+    setRestrictedAreaFilter,
+    SET_RESTRICTED_AREA
 } from '../actions/featuregrid';
 
 import {
@@ -118,6 +125,12 @@ import {
     setControlProperty,
     toggleControl
 } from '../actions/controls';
+
+import {
+    isAdminUserSelector,
+    isLoggedIn,
+    userSelector
+} from "../selectors/security";
 
 import {
     queryPanelSelector,
@@ -131,9 +144,11 @@ import {
     changesMapSelector,
     newFeaturesSelector,
     hasChangesSelector,
+    changesSelector,
     hasNewFeaturesSelector,
     selectedFeatureSelector,
     selectedLayerIdSelector,
+    selectedLayerNameSelector,
     isDrawingSelector,
     modeSelector,
     isFeatureGridOpen,
@@ -142,8 +157,14 @@ import {
     queryOptionsSelector,
     getAttributeFilters,
     selectedLayerSelector,
+    getCustomEditorsOptions,
     multiSelect,
-    paginationSelector, isViewportFilterActive, viewportFilter
+    paginationSelector, isViewportFilterActive, viewportFilter,
+    isAttributesEditorSelector,
+    restrictedAreaUrlSelector,
+    restrictedAreaSelector,
+    restrictedAreaFilter,
+    additionnalGridFilters
 } from '../selectors/featuregrid';
 
 import { error, warning } from '../actions/notifications';
@@ -203,8 +224,16 @@ const setupDrawSupport = (state, original) => {
         return feature;
     });
 
-    // Remove features with geometry null or id "empty_row"
-    const cleanFeatures = features.filter(ft => ft.geometry !== null || ft.id !== 'empty_row');
+    // Remove features with geometry null or id "empty_row" or not allowed by restricted area
+    const cleanFeatures = features.filter(ft => {
+        const restrictedArea = restrictedAreaSelector(state);
+        let isValidFeature = ft.geometry !== null || ft.id !== 'empty_row';
+        if (isValidFeature && !isEmpty(restrictedArea)) {
+            // allow only feature inside restricted area
+            isValidFeature = booleanIntersects(restrictedArea, ft.geometry);
+        }
+        return isValidFeature
+    });
 
     if (cleanFeatures.length > 0) {
         return Rx.Observable.from([
@@ -246,13 +275,14 @@ const createDeleteFlow = (features, describeFeatureType, url) => save(
     url,
     createDeleteTransaction(features, requestBuilder(describeFeatureType))
 );
+
 const createLoadPageFlow = (store) => ({page, size, reason} = {}) => {
     const state = store.getState();
     return Rx.Observable.of( query(
         wfsURL(state),
         addPagination({
             ...(wfsFilter(state)),
-            ...viewportFilter(state)
+            ...additionnalGridFilters(state),
         },
         getPagination(state, {page, size})
         ),
@@ -288,7 +318,7 @@ const updateFilterFunc = (store) => ({update = {}, append} = {}) => {
     // If an advanced filter is present it's filterFields should be composed with the action'
     const {id} = selectedLayerSelector(store.getState());
     const filterObj = {...get(store.getState(), `featuregrid.advancedFilters["${id}"]`)};
-    if (filterObj) {
+        if (filterObj && !isEmpty(filterObj)) {
         // TODO: make append with advanced filters work
         const attributesFilter = getAttributeFilters(store.getState()) || {};
         const columnsFilters = reduce(attributesFilter, (cFilters, value, attribute) => {
@@ -304,7 +334,7 @@ const updateFilterFunc = (store) => ({update = {}, append} = {}) => {
             spatialFieldOperator = columnsFilters.spatialFieldOperator;
         }
         const composedFilterFields = composeAttributeFilters([filterObj, columnsFilters], "AND", spatialFieldOperator);
-        const filter = {...filterObj, ...composedFilterFields};
+        const filter = { ...filterObj, ...composedFilterFields };
         return updateQuery({updates: filter, reason: update?.type});
     }
     let u = update;
@@ -357,7 +387,7 @@ export const featureGridStartupQuery = (action$, store) =>
 export const featureGridSort = (action$, store) =>
     action$.ofType(SORT_BY)
         .switchMap( ({sortBy, sortOrder}) =>
-            Rx.Observable.of( query(
+        Rx.Observable.of( query(
                 wfsURL(store.getState()),
                 addPagination({
                     ...wfsFilter(store.getState()),
@@ -369,7 +399,7 @@ export const featureGridSort = (action$, store) =>
             ))
                 .merge(action$.ofType(QUERY_RESULT)
                     .map((ra) => featureGridQueryResult(get(ra, "result.features", []), [get(ra, "filterObj.pagination.startIndex")]))
-                    .takeUntil(action$.ofType(QUERY_ERROR))
+                                        .takeUntil(action$.ofType(QUERY_ERROR))
                     .take(1)
                 )
         );
@@ -478,7 +508,7 @@ export const enableGeometryFilterOnEditMode = (action$, store) =>
         .filter(() => modeSelector(store.getState()) === MODES.EDIT)
         .switchMap(() => {
             const currentFilter = find(getAttributeFilters(store.getState()), f => f.type === 'geometry') || {};
-            return currentFilter.value ? Rx.Observable.empty() : Rx.Observable.of(updateFilter({
+                        return currentFilter.value ? Rx.Observable.empty() : Rx.Observable.of(updateFilter({
                 attribute: findGeometryProperty(describeSelector(store.getState())).name,
                 enabled: true,
                 type: "geometry"
@@ -648,7 +678,7 @@ export const featureGridChangePage = (action$, store) =>
             .merge(action$.ofType(QUERY_RESULT)
                 .map((ra) => {
                     let features = get(ra, "result.features", []);
-                    const multipleSelect = multiSelect(store.getState());
+                                        const multipleSelect = multiSelect(store.getState());
                     const geometryFilter = find(getAttributeFilters(store.getState()), f => f.type === 'geometry');
                     if (multipleSelect && geometryFilter?.enabled) {
                         features = selectedFeaturesSelector(store.getState());
@@ -704,7 +734,8 @@ export const updateSelectedOnSaveOrCloseFeatureGrid = (action$) =>
  */
 export const savePendingFeatureGridChanges = (action$, store) =>
     action$.ofType(SAVE_CHANGES).switchMap( () =>
-        Rx.Observable.of(featureSaving())
+    {
+        return Rx.Observable.of(featureSaving())
             .concat(
                 createSaveChangesFlow(
                     changesMapSelector(store.getState()),
@@ -718,8 +749,25 @@ export const savePendingFeatureGridChanges = (action$, store) =>
                         uid: "saveError",
                         autoDismiss: 5
                     })))
-            )
+            )}
     );
+export const handleFeatureChanges = (action$, store) =>
+    Rx.Observable.merge(
+        action$.ofType(GRID_ROW_UPDATE, CREATE_NEW_FEATURE),
+    )
+        .flatMap((action) => {
+            const layerName = selectedLayerNameSelector(store.getState());
+            const userInfos = userSelector(store.getState());
+            const options = getCustomEditorsOptions(store.getState());
+            let rules = options?.rules.filter(rule => {
+                const layerRegEx = get(rule, "regex.typeName");
+                let regExLayer = new RegExp(layerRegEx);
+                return regExLayer.test(layerName);
+            });
+            const retrievedUserInfos = !isEmpty(rules) ? getAttributesFromUserInfos(rules, userInfos) : {};
+            const updatedInfos = { ...action.updated, ...retrievedUserInfos };
+            return Rx.Observable.of(featureModified(action.features, updatedInfos));
+        });
 /**
  * trigger WFS transaction stream on DELETE_SELECTED_FEATURES action
  * @memberof epics.featuregrid
@@ -749,7 +797,7 @@ export const deleteSelectedFeatureGridFeatures = (action$, store) =>
  * @memberof epics.featuregrid
  */
 export const handleEditFeature = (action$, store) => action$.ofType(START_EDITING_FEATURE)
-    .switchMap( () => {
+    .switchMap(() => {
         const state = store.getState();
         const describe = describeSelector(state);
         const defaultFeatureProj = getDefaultFeatureProjection();
@@ -773,7 +821,7 @@ export const handleEditFeature = (action$, store) => action$.ofType(START_EDITIN
  */
 export const handleDrawFeature = (action$, store) => action$.ofType(START_DRAWING_FEATURE)
     .switchMap( () => {
-        const state = store.getState();
+                const state = store.getState();
         const describe = describeSelector(state);
         const defaultFeatureProj = getDefaultFeatureProjection();
         const geomType = findGeometryProperty(describe).localType;
@@ -880,6 +928,7 @@ export const deleteGeometryFeature = (action$, store) => action$.ofType(DELETE_G
  */
 export const triggerDrawSupportOnSelectionChange = (action$, store) => action$.ofType(SELECT_FEATURES, DESELECT_FEATURES, CLEAR_CHANGES, TOGGLE_MODE)
     .filter(() => modeSelector(store.getState()) === MODES.EDIT && hasSupportedGeometry(store.getState()))
+    .filter(() => !isAttributesEditorSelector(store.getState()))
     .switchMap( (a) => {
         const state = store.getState();
         let useOriginal = a.type === CLEAR_CHANGES;
@@ -1273,3 +1322,28 @@ export const resetViewportFilter = (action$, store) =>
         return viewportFilter(store.getState()) !== null ? Rx.Observable.of(setViewportFilter(null))
             : Rx.Observable.empty();
     });
+
+export const requestRestrictedArea = (action$, store) => 
+    action$.ofType(OPEN_FEATURE_GRID, LOGIN_SUCCESS)
+        .filter(() =>
+            !isAdminUserSelector(store.getState())
+            && isLoggedIn(store.getState())
+            && !isEmpty(restrictedAreaUrlSelector(store.getState()))
+        )
+        .switchMap((action) => {
+            const url = action.url || restrictedAreaUrlSelector(store.getState());
+            return Rx.Observable.defer(() => fetch(url).then(r => r?.json?.()))
+                .switchMap(result => {
+                    return Rx.Observable.of(
+                        setRestrictedArea(result),
+                        changePage(0)
+                    )
+                })
+        })
+export const resetRestrictedArea = (action$, store) => 
+    action$.ofType(LOGOUT, CLOSE_FEATURE_GRID)
+        .filter((a) => !isEmpty(restrictedAreaUrlSelector(store.getState())))
+        .switchMap(() => Rx.Observable.of(
+            setRestrictedArea({})
+        ))
+        

@@ -47,7 +47,8 @@ import {
     SET_TIME_SYNC,
     UPDATE_EDITORS_OPTIONS,
     SET_PAGINATION,
-    SET_VIEWPORT_FILTER
+    SET_VIEWPORT_FILTER,
+    SET_RESTRICTED_AREA,
 } from '../actions/featuregrid';
 import { MAP_CONFIG_LOADED } from '../actions/config';
 
@@ -57,9 +58,12 @@ import uuid from 'uuid';
 
 const emptyResultsState = {
     advancedFilters: {},
+    restrictedAreaFilter: {},
     filters: {},
     editingAllowedRoles: ["ADMIN"],
     editingAllowedGroups: [],
+    editingAttributesAllowedGroups: [],
+    editingAttributesAllowedGroups: ["ADMIN"],
     enableColumnFilters: true,
     showFilteredObject: false,
     timeSync: false,
@@ -155,8 +159,11 @@ function featuregrid(state = emptyResultsState, action) {
         return assign({}, state, {
             editingAllowedRoles: action.options.editingAllowedRoles || state.editingAllowedRoles || ["ADMIN"],
             editingAllowedGroups: action.options.editingAllowedGroups || state.editingAllowedGroups || [],
+            editingAttributesAllowedGroups: action.options.editingAttributesAllowedGroups || state.editingAttributesAllowedGroups || [],
             virtualScroll: !!action.options.virtualScroll,
-            maxStoredPages: action.options.maxStoredPages || 5
+            maxStoredPages: action.options.maxStoredPages || 5,
+            restrictedAreaUrl: action.options.restrictedAreaUrl,
+            restrictedArea: action.options.restrictedArea
         });
     }
     case LOAD_MORE_FEATURES:
@@ -177,8 +184,8 @@ function featuregrid(state = emptyResultsState, action) {
             }
         };
     }
-    case SELECT_FEATURES: {
-        const features = action.features.filter(f => f.id !== 'empty_row');
+        case SELECT_FEATURES: {
+            const features = action.features.filter(f => f.id !== 'empty_row');
         if (state.multiselect && action.append) {
             return assign({}, state, {select: action.append ? uniqBy([...state.select, ...features], "id") : features});
         }
@@ -187,7 +194,7 @@ function featuregrid(state = emptyResultsState, action) {
         }
         return assign({}, state, {select: (features || [])});
     }
-    case TOGGLE_FEATURES_SELECTION:
+        case TOGGLE_FEATURES_SELECTION:
         let keepValues = state.select.filter( f => !isPresent(f, action.features));
         // let removeValues = state.select.filter( f => isPresent(f, action.features));
         let newValues = action.features.filter( f => !isPresent(f, state.select));
@@ -207,7 +214,7 @@ function featuregrid(state = emptyResultsState, action) {
     }
     case CLEAR_SELECTION:
         return assign({}, state, {select: [], changes: []});
-    case SET_FEATURES:
+        case SET_FEATURES:
         return assign({}, state, {features: action.features});
     case DOCK_SIZE_FEATURES:
         return assign({}, state, {dockSize: action.dockSize});
@@ -364,7 +371,8 @@ function featuregrid(state = emptyResultsState, action) {
         }
         return state;
     }
-    case UPDATE_FILTER : {
+        case UPDATE_FILTER: {
+            console.log("UPDATE_FILTER");
         const {attribute} = (action.update || {});
         if (attribute && action.append) {
             const value = state.filters[attribute].value;
@@ -426,7 +434,7 @@ function featuregrid(state = emptyResultsState, action) {
     case STORE_ADVANCED_SEARCH_FILTER : {
         return assign({}, state, {advancedFilters: assign({}, state.advancedFilters, {[state.selectedLayer]: action.filterObj})});
     }
-    case GRID_QUERY_RESULT: {
+        case GRID_QUERY_RESULT: {
         return assign({}, state, {features: action.features || [], pages: action.pages || []});
     }
     case TOGGLE_SHOW_AGAIN_FLAG: {
@@ -440,6 +448,9 @@ function featuregrid(state = emptyResultsState, action) {
     }
     case MAP_CONFIG_LOADED: {
         return {...state, ...get(action, 'config.featureGrid', {})};
+        }
+    case SET_RESTRICTED_AREA: {
+        return { ...state, restrictedArea: { ...state.restrictedArea, geometry: action.area } };
     }
     default:
         return state;

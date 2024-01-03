@@ -6,7 +6,7 @@
   * LICENSE file in the root directory of this source tree.
   */
 
-import { head, get, isObject } from 'lodash';
+import { head, get, isObject, isEmpty } from 'lodash';
 
 import { getLayerFromId } from './layers';
 import { findGeometryProperty } from '../utils/ogc/WFS/base';
@@ -32,6 +32,7 @@ export const selectedFeaturesSelector = state => state && state.featuregrid && s
 export const changesSelector = state => state && state.featuregrid && state.featuregrid.changes;
 export const newFeaturesSelector = state => state && state.featuregrid && state.featuregrid.newFeatures;
 export const selectedFeatureSelector = state => head(selectedFeaturesSelector(state));
+export const getCustomEditorsOptions = state => get(state, "featuregrid.customEditorsOptions");
 
 export const geomTypeSelectedFeatureSelector = state => {
     let desc = describeSelector(state);
@@ -77,6 +78,7 @@ export const selectedLayerParamsSelector = state => get(getLayerById(state, sele
 export const selectedLayerSelector = state => getLayerById(state, selectedLayerIdSelector(state));
 export const editingAllowedRolesSelector = state => get(state, "featuregrid.editingAllowedRoles", ["ADMIN"]);
 export const editingAllowedGroupsSelector = state => get(state, "featuregrid.editingAllowedGroups", []);
+export const editingAttributesAllowedGroupsSelector = state => get(state, "featuregrid.editingAttributesAllowedGroups", []);
 export const canEditSelector = state => state && state.featuregrid && state.featuregrid.canEdit;
 /**
  * selects featuregrid state
@@ -202,6 +204,20 @@ export const isEditingAllowedSelector = (state) => {
     })(state);
     return (canEdit || isAllowed) && !isCesium(state);
 };
+
+export const isAttributesEditorSelector = (state) => {
+    const allowedAttributeEditorGroups = editingAttributesAllowedGroupsSelector(state);
+    const isAttributesOnlyAllowed = isUserAllowedSelectorCreator({
+        allowedRoles: [],
+        allowedGroups: allowedAttributeEditorGroups
+    })(state);
+    return isAttributesOnlyAllowed;
+}
+
+export const restrictedAreaUrlSelector = state => get(state, "featuregrid.restrictedArea.url");
+export const restrictedAreaOperatorSelector = state => get(state, "featuregrid.restrictedArea.operator");
+export const restrictedAreaSelector = state => get(state, "featuregrid.restrictedArea.geometry");
+
 export const paginationSelector = state => get(state, "featuregrid.pagination");
 export const useLayerFilterSelector = state => get(state, "featuregrid.useLayerFilter", true);
 
@@ -218,8 +234,10 @@ export const viewportFilter = createShallowSelectorCreator(isEqual)(
     isFilterByViewportSupported,
     (viewportFilterIsActive, box, projection, spatialField = [], describeLayer, viewportFilterIsSupported) => {
         const attribute = findGeometryProperty(describeLayer)?.name;
-        const existingFilter = spatialField?.operation ? [spatialField] : spatialField;
-        return viewportFilterIsActive && viewportFilterIsSupported ? {
+        let existingFilter = spatialField?.operation ? [spatialField] : spatialField;
+        existingFilter = existingFilter.filter(f => !f.viewport && !f.restrictedArea);
+
+        let vf = viewportFilterIsActive && viewportFilterIsSupported ? {
             spatialField: [
                 ...existingFilter,
                 {
@@ -229,9 +247,44 @@ export const viewportFilter = createShallowSelectorCreator(isEqual)(
                     },
                     attribute: attribute,
                     method: "Rectangle",
-                    operation: "INTERSECTS"
+                    operation: "INTERSECTS",
+                    viewport: true
+                }
+            ]
+        } : {
+            spatialField: existingFilter
+        };
+        return vf;
+    }
+);
+
+
+export const restrictedAreaFilter = createShallowSelectorCreator(isEqual)(
+    restrictedAreaSelector,
+    projectionSelector,
+    describeSelector,
+    state => restrictedAreaOperatorSelector(state),
+    (restrictedArea, projection, describeLayer, operator) => {
+        const attribute = findGeometryProperty(describeLayer)?.name;
+        return !isEmpty(restrictedArea) ? {
+            spatialField: [
+                {
+                    geometry: {
+                        ...restrictedArea,
+                        projection: "EPSG:4326"
+                    },
+                    attribute: attribute,
+                    method: "Polygon",
+                    operation: operator || "CONTAINS",
+                    restrictedArea: true
                 }
             ]
         } : {};
     }
-);
+)
+
+export const additionnalGridFilters = (state) => {
+    const restrictedArea = restrictedAreaFilter(state)?.spatialField || [];
+    const viewport = viewportFilter(state)?.spatialField || [];
+    return {spatialField: [...restrictedArea, ...viewport]}
+}

@@ -446,6 +446,7 @@
                 "deleteGeometry": "Xóa hình",
                 "deleteSelectedFeatures": "Xóa các tính năng đã chọn",
                 "disableTimeSync": "Không đồng bộ hóa với thời gian hoặc khoảng thời gian đã chọn",
+                "restrictedByArea": "Bảng giới hạn ở một vùng",
                 "downloadGridData": "Tải xuống dữ liệu lưới",
                 "drawGeom": "Vẽ tính năng",
                 "editFeature": "Chỉnh sửa tính năng",
