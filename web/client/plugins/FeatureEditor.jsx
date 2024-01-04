@@ -55,6 +55,10 @@ import {isViewportFilterActive} from "../selectors/featuregrid";
   * Configuring with ["ALL"] allows all users to have access regardless of user's permission.
   * @prop {string[]} cfg.editingAllowedGroups array of user groups allowed to enter in edit mode.
   * When configured, gives the editing permissions to users members of one of the groups listed.
+  * @prop {string[]} cfg.editingAttributesAllowedRoles array of user roles allowed to enter in edit mode and change attributes values.
+  * When configured, remove the geometry editing permissions to users members of one of the roles listed.
+  * @prop {string[]} cfg.editingAttributesAllowedGroups array of user groups allowed to enter in edit mode change attributes values.
+  * When configured, remove the geometry editing permissions to users members of one of the groups listed.
   * @prop {boolean} cfg.virtualScroll default true. Activates virtualScroll. When false the grid uses normal pagination
   * @prop {number} cfg.maxStoredPages default 5. In virtual Scroll mode determines the size of the loaded pages cache
   * @prop {number} cfg.vsOverScan default 20. Number of rows to load above/below the visible slice of the grid
