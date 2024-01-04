@@ -28,14 +28,15 @@ const getSaveMessageId = ({saving, saved}) => {
     return "featuregrid.toolbar.saveChanges";
 };
 const standardButtons = {
-    editMode: ({disabled, mode, isEditingAllowed, layer, events = {}}) => (<TButton
+    editMode: ({ disabled, mode, isEditingAllowed, layer, events = {} }) => {
+        return (<TButton
         id="edit-mode"
         keyProp="edit-mode"
         tooltipId="featuregrid.toolbar.editMode"
         disabled={disabled}
         visible={mode === "VIEW" && isEditingAllowed && areLayerFeaturesEditable(layer)}
         onClick={events.switchEditMode}
-        glyph="pencil"/>),
+        glyph="pencil"/>)},
     filter: ({isFilterActive = false, viewportFilter, disabled, isSearchAllowed, mode, showAdvancedFilterButton = true, events = {}}) => (<TButton
         id="search"
         keyProp="search"
@@ -61,37 +62,37 @@ const standardButtons = {
         visible={mode === "EDIT" && !hasChanges && !hasNewFeatures}
         onClick={events.switchViewMode}
         glyph="arrow-left"/>),
-    addFeature: ({disabled, mode, hasNewFeatures, hasChanges, hasSupportedGeometry = true, events = {}}) => (<TButton
+    addFeature: ({isAttributeEditor, disabled, mode, hasNewFeatures, hasChanges, hasSupportedGeometry = true, events = {}}) => (<TButton
         id="add-feature"
         keyProp="add-feature"
         tooltipId="featuregrid.toolbar.addNewFeatures"
         disabled={disabled}
-        visible={mode === "EDIT" && !hasNewFeatures && !hasChanges && hasSupportedGeometry}
+        visible={mode === "EDIT" && !isAttributeEditor && !hasNewFeatures && !hasChanges && hasSupportedGeometry}
         onClick={events.createFeature}
         glyph="row-add"/>),
-    drawFeature: ({isDrawing = false, disabled, isSimpleGeom, mode, selectedCount, hasGeometry, hasSupportedGeometry = true, events = {}}) => (<TButton
+    drawFeature: ({isAttributeEditor, isDrawing = false, disabled, isSimpleGeom, mode, selectedCount, hasGeometry, hasSupportedGeometry = true, events = {}}) => (<TButton
         id="draw-feature"
         keyProp="draw-feature"
         tooltipId={getDrawFeatureTooltip(isDrawing, isSimpleGeom)}
         disabled={disabled}
-        visible={mode === "EDIT" && selectedCount === 1 && (!hasGeometry || hasGeometry && !isSimpleGeom) && hasSupportedGeometry}
+        visible={mode === "EDIT" && !isAttributeEditor && selectedCount === 1 && (!hasGeometry || hasGeometry && !isSimpleGeom) && hasSupportedGeometry}
         onClick={events.startDrawingFeature}
         active={isDrawing}
         glyph="pencil-add"/>),
-    removeFeature: ({disabled, mode, selectedCount, hasChanges, hasNewFeatures, events = {}}) => (<TButton
+    removeFeature: ({isAttributeEditor, disabled, mode, selectedCount, hasChanges, hasNewFeatures, events = {}}) => (<TButton
         id="remove-features"
         keyProp="remove-features"
         tooltipId="featuregrid.toolbar.deleteSelectedFeatures"
         disabled={disabled}
-        visible={mode === "EDIT" && selectedCount > 0 && !hasChanges && !hasNewFeatures}
+        visible={mode === "EDIT" && !isAttributeEditor && selectedCount > 0 && !hasChanges && !hasNewFeatures}
         onClick={events.deleteFeatures}
         glyph="trash-square"/>),
-    saveFeature: ({saving = false, saved = false, disabled, mode, hasChanges, hasNewFeatures, events = {}}) => (<TButton
+    saveFeature: ({isAttributeEditor, saving = false, saved = false, disabled, mode, hasChanges, hasNewFeatures, events = {}}) => (<TButton
         id="save-feature"
         keyProp="save-feature"
         tooltipId={getSaveMessageId({saving, saved})}
         disabled={saving || saved || disabled}
-        visible={mode === "EDIT" && hasChanges || hasNewFeatures}
+        visible={mode === "EDIT" && !isAttributeEditor && hasChanges || hasNewFeatures}
         active={saved}
         onClick={events.saveChanges}
         glyph="floppy-disk"/>),
@@ -103,12 +104,12 @@ const standardButtons = {
         visible={mode === "EDIT" && hasChanges || hasNewFeatures}
         onClick={events.clearFeatureEditing}
         glyph="remove-square"/>),
-    deleteGeometry: ({disabled, mode, hasGeometry, selectedCount, hasSupportedGeometry = true, events = {}}) => (<TButton
+    deleteGeometry: ({isAttributeEditor, disabled, mode, hasGeometry, selectedCount, hasSupportedGeometry = true, events = {}}) => (<TButton
         id="delete-geometry"
         keyProp="delete-geometry"
         tooltipId="featuregrid.toolbar.deleteGeometry"
         disabled={disabled}
-        visible={mode === "EDIT" && hasGeometry && selectedCount === 1 && hasSupportedGeometry}
+        visible={mode === "EDIT" && !isAttributeEditor && hasGeometry && selectedCount === 1 && hasSupportedGeometry}
         onClick={events.deleteGeometry}
         glyph="polygon-trash"/>),
     gridSettings: ({disabled, isColumnsOpen, selectedCount, mode, events = {}}) => (<TButton
@@ -170,11 +171,11 @@ const standardButtons = {
         active={timeSync}
         onClick={() => events.setTimeSync && events.setTimeSync(!timeSync)}
         glyph="time" />),
-    snapToFeature: ({snapping, availableSnappingLayers = [], isSnappingLoading, snappingConfig, mode, mapType, editorHeight, pluginCfg, events = {}}) => (<TSplitButton
+    snapToFeature: ({isAttributeEditor, snapping, availableSnappingLayers = [], isSnappingLoading, snappingConfig, mode, mapType, editorHeight, pluginCfg, events = {}}) => (<TSplitButton
         id="snap-button"
         keyProp="snap-button"
         tooltipId={snapping ? "featuregrid.toolbar.disableSnapping" : "featuregrid.toolbar.enableSnapping"}
-        visible={mode === "EDIT" && (pluginCfg?.snapTool ?? true) && mapType === MapLibraries.OPENLAYERS}
+        visible={mode === "EDIT" && !isAttributeEditor && (pluginCfg?.snapTool ?? true) && mapType === MapLibraries.OPENLAYERS}
         onClick={() => {
             events.toggleSnapping && events.toggleSnapping(!snapping);
         }}
@@ -309,6 +310,7 @@ export default React.memo((props = {}) => {
         toolbarItems = [],
         pluginCfg = { showPopoverSync: false }
     } = props;
+    const toolbarButtons = sortBy(buttons.concat(toolbarItems), ["position"]);
     const [showPopover, setShowPopoverSync] = React.useState(getApi().getItem("showPopoverSync") !== null && pluginCfg?.showPopoverSync ? getApi().getItem("showPopoverSync") === "true" : pluginCfg?.showPopoverSync);
     React.useEffect(()=>{
         if (showPopover && props.mode === 'EDIT') {
@@ -319,6 +321,6 @@ export default React.memo((props = {}) => {
     }, [props.mode]);
     return (<ButtonGroup id="featuregrid-toolbar" className="featuregrid-toolbar featuregrid-toolbar-margin">
 
-        {sortBy(buttons.concat(toolbarItems), ["position"]).map(({Component}) => <Component {...props} showPopoverSync={showPopover} hideSyncPopover={() => setShowPopoverSync(false)} mode={props?.mode ?? "VIEW"} disabled={props.disableToolbar} />)}
+        {toolbarButtons.map(({Component}) => <Component {...props} showPopoverSync={showPopover} hideSyncPopover={() => setShowPopoverSync(false)} mode={props?.mode ?? "VIEW"} disabled={props.disableToolbar} />)}
     </ButtonGroup>);
 });

@@ -174,6 +174,8 @@ const EditorPlugin = connect(
                 virtualScroll: this.props.virtualScroll ?? true,
                 editingAllowedRoles: this.props.editingAllowedRoles,
                 editingAllowedGroups: this.props.editingAllowedGroups,
+                editingAttributesAllowedRoles: this.props.editingAttributesAllowedRoles,
+                editingAttributesAllowedGroups: this.props.editingAttributesAllowedGroups,
                 maxStoredPages: this.props.maxStoredPages
             });
         },
@@ -181,16 +183,20 @@ const EditorPlugin = connect(
             // Re-Initialize configurations
             !this.props.viewportFilterInitialized && this.props.filterByViewport && this.props.setViewportFilter(true);
 
-            const {virtualScroll, editingAllowedRoles, editingAllowedGroups, maxStoredPages} = this.props ?? {};
+            const {virtualScroll, editingAllowedRoles, editingAllowedGroups, editingAttributesAllowedRoles, editingAttributesAllowedGroups, maxStoredPages} = this.props ?? {};
             if (prevProps.virtualScroll !== virtualScroll
                 || !isEqual(prevProps.editingAllowedRoles, editingAllowedRoles)
                 || !isEqual(prevProps.editingAllowedGroups, editingAllowedGroups)
+                || !isEqual(prevProps.editingAttributesAllowedRoles, editingAttributesAllowedRoles)
+                || !isEqual(prevProps.editingAttributesAllowedGroups, editingAttributesAllowedGroups)
                 || prevProps.maxStoredPages !== maxStoredPages
             ) {
                 this.props.initPlugin({
                     virtualScroll: virtualScroll ?? true,
                     editingAllowedRoles,
                     editingAllowedGroups,
+                    editingAttributesAllowedRoles,
+                    editingAttributesAllowedGroups,
                     maxStoredPages
                 });
             }

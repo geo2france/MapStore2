@@ -60,6 +60,8 @@ const emptyResultsState = {
     filters: {},
     editingAllowedRoles: ["ADMIN"],
     editingAllowedGroups: [],
+    editingAttributesAllowedGroups: [],
+    editingAttributesAllowedGroups: ["ADMIN"],
     enableColumnFilters: true,
     showFilteredObject: false,
     timeSync: false,
@@ -155,6 +157,8 @@ function featuregrid(state = emptyResultsState, action) {
         return assign({}, state, {
             editingAllowedRoles: action.options.editingAllowedRoles || state.editingAllowedRoles || ["ADMIN"],
             editingAllowedGroups: action.options.editingAllowedGroups || state.editingAllowedGroups || [],
+            editingAttributesAllowedRoles: action.options.editingAttributesAllowedRoles || state.editingAttributesAllowedRoles || ["ADMIN"],
+            editingAttributesAllowedGroups: action.options.editingAttributesAllowedGroups || state.editingAttributesAllowedGroups || [],
             virtualScroll: !!action.options.virtualScroll,
             maxStoredPages: action.options.maxStoredPages || 5
         });
