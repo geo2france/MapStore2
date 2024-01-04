@@ -204,6 +204,8 @@ const FeatureDock = (props = {
                                     toolbarItems,
                                     hideCloseButton: props.hideCloseButton,
                                     hideLayerTitle: props.hideLayerTitle,
+                                    editingAttributesAllowedRoles: props.editingAttributesAllowedRoles,
+                                    editingAttributesAllowedGroups: props.editingAttributesAllowedGroups,
                                     pluginCfg: props.pluginCfg
                                 })}
                                 columns={getPanels(props.tools)}

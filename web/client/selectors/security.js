@@ -76,4 +76,4 @@ export const isUserAllowedSelectorCreator = ({
         || castArray(allowedGroups)
             .some((group) => groups.includes(group))
     );
-};
+    };
