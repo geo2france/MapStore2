@@ -49,7 +49,8 @@ class FeatureGrid extends React.PureComponent {
         tools: PropTypes.array,
         gridEvents: PropTypes.object,
         virtualScroll: PropTypes.bool,
-        maxStoredPages: PropTypes.number
+        maxStoredPages: PropTypes.number,
+        user: PropTypes.object
     };
     static childContextTypes = {
         isModified: PropTypes.func,
@@ -71,7 +72,8 @@ class FeatureGrid extends React.PureComponent {
         tools: [],
         showDragHandle: false,
         virtualScroll: false,
-        maxStoredPages: 5
+        maxStoredPages: 5,
+        user: {}
     };
     constructor(props) {
         super(props);
@@ -82,7 +84,7 @@ class FeatureGrid extends React.PureComponent {
             isModified: (id, key) => {
                 return this.props.changes.hasOwnProperty(id) &&
                     this.props.changes[id].hasOwnProperty(key);
-            },
+                            },
             isProperty: (k) => k === "geometry" || isProperty(k, this.props.describeFeatureType),
             isValid: (val, key) => this.props.describeFeatureType ? isValidValueForPropertyName(val, key, this.props.describeFeatureType) : true
         };

@@ -399,3 +399,21 @@ export const supportsFeatureEditing = (layer) => includes(supportedEditLayerType
  * @returns {boolean} flag
  */
 export const areLayerFeaturesEditable = (layer) =>  !layer?.disableFeaturesEditing && supportsFeatureEditing(layer);
+
+export const setAttributesFromheader = (updated, customEditorsOptions, user) => {
+    const changesWithHeaderInfos = { ...updated };
+    // get fields to insert
+    customEditorsOptions.rules.filter(rule => {
+        // TODO : need to test if feature have field
+
+        // get fields values from user
+        const headerFieldName = get(rule, "editorProps.headerField");
+        const fromUserValue = get(user, headerFieldName);
+        const fieldNameToChange = get(rule, "regex.attribute");
+        // add to updated object
+        if (fromUserValue && fieldNameToChange) {
+            changesWithHeaderInfos[fieldNameToChange] = fromUserValue;
+        }
+    })
+    return changesWithHeaderInfos;
+}

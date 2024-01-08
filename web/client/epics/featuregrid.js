@@ -12,7 +12,7 @@ import { LOCATION_CHANGE } from 'connected-react-router';
 import axios from '../libs/ajax';
 import bbox from '@turf/bbox';
 import { fidFilter } from '../utils/ogc/Filter/filter';
-import { getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages  } from '../utils/FeatureGridUtils';
+import { getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages, setAttributesFromheader  } from '../utils/FeatureGridUtils';
 
 import assign from 'object-assign';
 import {
@@ -105,12 +105,14 @@ import {
     ACTIVATE_TEMPORARY_CHANGES,
     disableToolbar,
     FEATURES_MODIFIED,
+    GRID_ROW_UPDATE,
     deactivateGeometryFilter as deactivateGeometryFilterAction,
     setSelectionOptions,
     setPagination,
     launchUpdateFilterFunc,
     LAUNCH_UPDATE_FILTER_FUNC, SET_LAYER,
-    SET_VIEWPORT_FILTER, setViewportFilter
+    SET_VIEWPORT_FILTER, setViewportFilter,
+    featureModified
 } from '../actions/featuregrid';
 
 import {
@@ -119,6 +121,10 @@ import {
     setControlProperty,
     toggleControl
 } from '../actions/controls';
+
+import {
+    userSelector
+} from "../selectors/security";
 
 import {
     queryPanelSelector,
@@ -132,6 +138,7 @@ import {
     changesMapSelector,
     newFeaturesSelector,
     hasChangesSelector,
+    changesSelector,
     hasNewFeaturesSelector,
     selectedFeatureSelector,
     selectedLayerIdSelector,
@@ -143,6 +150,7 @@ import {
     queryOptionsSelector,
     getAttributeFilters,
     selectedLayerSelector,
+    getCustomEditorsOptions,
     multiSelect,
     paginationSelector, isViewportFilterActive, viewportFilter,
     isAttributesEditorSelector
@@ -715,7 +723,9 @@ export const updateSelectedOnSaveOrCloseFeatureGrid = (action$) =>
  */
 export const savePendingFeatureGridChanges = (action$, store) =>
     action$.ofType(SAVE_CHANGES).switchMap( () =>
-        Rx.Observable.of(featureSaving())
+    {
+        console.log("EPICS - Save Changes");
+        return Rx.Observable.of(featureSaving())
             .concat(
                 createSaveChangesFlow(
                     changesMapSelector(store.getState()),
@@ -729,8 +739,23 @@ export const savePendingFeatureGridChanges = (action$, store) =>
                         uid: "saveError",
                         autoDismiss: 5
                     })))
-            )
+            )}
     );
+export const handleFeatureChanges = (action$, store) =>
+    Rx.Observable.merge(
+        action$.ofType(GRID_ROW_UPDATE, CREATE_NEW_FEATURE),
+    )
+        .flatMap((action) => {
+            console.log("EPICS - Do On Feature Modified");
+            console.log(action);
+            const featureProps = action.feature;
+            const hasNewFeatures = hasNewFeaturesSelector(store.getState());
+            const hasChanges = hasChangesSelector(store.getState());
+            const userInfos = userSelector(store.getState());
+            const options = getCustomEditorsOptions(store.getState());
+            const changesWithHeaderInfos = setAttributesFromheader(action.updated, options, userInfos);
+            return Rx.Observable.of(featureModified(action.features, changesWithHeaderInfos));
+        });
 /**
  * trigger WFS transaction stream on DELETE_SELECTED_FEATURES action
  * @memberof epics.featuregrid
@@ -760,7 +785,8 @@ export const deleteSelectedFeatureGridFeatures = (action$, store) =>
  * @memberof epics.featuregrid
  */
 export const handleEditFeature = (action$, store) => action$.ofType(START_EDITING_FEATURE)
-    .switchMap( () => {
+    .switchMap(() => {
+        console.log("EPICS - Start Editing Feature");
         const state = store.getState();
         const describe = describeSelector(state);
         const defaultFeatureProj = getDefaultFeatureProjection();

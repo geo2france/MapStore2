@@ -32,6 +32,7 @@ export const selectedFeaturesSelector = state => state && state.featuregrid && s
 export const changesSelector = state => state && state.featuregrid && state.featuregrid.changes;
 export const newFeaturesSelector = state => state && state.featuregrid && state.featuregrid.newFeatures;
 export const selectedFeatureSelector = state => head(selectedFeaturesSelector(state));
+export const getCustomEditorsOptions = state => get(state, "featuregrid.customEditorsOptions");
 
 export const geomTypeSelectedFeatureSelector = state => {
     let desc = describeSelector(state);

@@ -21,7 +21,7 @@ import { sizeChange, setUp, setSyncTool } from '../../actions/featuregrid';
 import { mapLayoutValuesSelector } from '../../selectors/maplayout';
 import {paginationInfo, describeSelector, wfsURLSelector, typeNameSelector, isSyncWmsActive} from '../../selectors/query';
 import {isAttributesEditorSelector, isEditingAllowedSelector, modeSelector, changesSelector, newFeaturesSelector, hasChangesSelector, selectedLayerFieldsSelector, selectedFeaturesSelector, getDockSize} from '../../selectors/featuregrid';
-import { isAdminUserSelector } from '../../selectors/security';
+import { isAdminUserSelector, userSelector } from '../../selectors/security';
 import { getPanels, getHeader, getFooter, getDialogs, getEmptyRowsView, getFilterRenderers } from './panels/index';
 import {gridTools, gridEvents, pageEvents, toolbarEvents} from './index';
 
@@ -216,6 +216,7 @@ const FeatureDock = (props = {
                                     customEditorsOptions={props.customEditorsOptions}
                                     autocompleteEnabled={props.autocompleteEnabled}
                                     url={props.url}
+                                    user={props.user}
                                     typeName={props.typeName}
                                     filterRenderers={filterRenderers}
                                     enableColumnFilters={props.enableColumnFilters}
@@ -281,6 +282,7 @@ export const selector = createStructuredSelector({
     pages: state => get(state, 'featuregrid.pages'),
     size: state => get(state, 'featuregrid.pagination.size'),
     isAdmin: isAdminUserSelector,
+    user: userSelector
 });
 
 const EditorPlugin = compose(
