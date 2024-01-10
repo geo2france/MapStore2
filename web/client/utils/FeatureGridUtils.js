@@ -147,7 +147,7 @@ export const featureTypeToGridColumns = (
     {getEditor = () => {}, getFilterRenderer = () => {}, getFormatter = () => {}, getHeaderRenderer = () => {}} = {}) =>
     getAttributeFields(describe).filter(e => !(columnSettings[e.name] && columnSettings[e.name].hide)).map((desc) => {
         const option = options.find(o => o.name === desc.name);
-        const field = fields.find(f => f.name === desc.name);
+        const field = fields.find(f => f.name === desc.name) || {};
         const isEditable = controlFieldEditable(editable, customEditorOptions, { url, typeName, attribute: desc.name });
         return {
             sortable,
@@ -161,7 +161,7 @@ export const featureTypeToGridColumns = (
             resizable,
             editable: isEditable,
             filterable,
-            editor: isEditable ? getEditor(desc, field) : null,
+            editor: getEditor(desc, {editable: isEditable, ...field}),
             formatter: getFormatter(desc, field),
             filterRenderer: getFilterRenderer(desc, field)
         };

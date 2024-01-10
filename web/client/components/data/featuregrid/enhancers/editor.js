@@ -162,12 +162,13 @@ const featuresToGrid = compose(
 
             const featureTypeToCols = featureTypeToGridColumns(customEditorInfos, props.describeFeatureType, props.columnSettings, props.fields, colsOptions, {
                 getHeaderRenderer,
-                getEditor: (desc, x) => {
+                getEditor: (desc, field) => {
                     const generalProps = {
                         onTemporaryChanges: props.gridEvents && props.gridEvents.onTemporaryChanges,
                         autocompleteEnabled: props.autocompleteEnabled,
                         url: props.url,
-                        typeName: props.typeName
+                        typeName: props.typeName,
+                        disabled: !field.editable
                     };
                     const regexProps = {attribute: desc.name, url: props.url, typeName: props.typeName};
                     const rules = props.customEditorsOptions && props.customEditorsOptions.rules || [];
@@ -184,15 +185,7 @@ const featuresToGrid = compose(
             });
 
             const result = { columns: getToolsCols.concat(featureTypeToCols) };
-            
-            // test gb - allow to insert event on columns
-            result.columns.forEach(x => x.events = {
-                onClick: (ev, args) => {
-                    console.log(ev);
-                    console.log(args);
-                    console.log(props);
-                }
-            })
+
             return result;
         }
     ),

@@ -68,6 +68,7 @@ export default class FormatEditor extends React.Component {
             ref={this.inputRef}
             className="form-control"
             defaultValue={this.props.value}
+            disabled={!this.props?.column?.editable}
             onChange={(e) => {
                 this.setState({
                     inputText: e.target.value,

@@ -52,7 +52,7 @@ class AutocompleteEditor extends AttributeEditor {
         };
     }
     render() {
-        return <AutocompleteCombobox {...this.props} url={ConfigUtils.getParsedUrl(this.props.url, {"outputFormat": "json"})} filter="contains" autocompleteStreamFactory={createPagedUniqueAutompleteStream}/>;
+        return <AutocompleteCombobox disabled={!this.props?.column?.editable} {...this.props} url={ConfigUtils.getParsedUrl(this.props.url, {"outputFormat": "json"})} filter="contains" autocompleteStreamFactory={createPagedUniqueAutompleteStream}/>;
     }
 }
 

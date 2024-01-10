@@ -90,6 +90,7 @@ export default class NumberEditor extends React.Component {
             max={this.props.maxValue}
             className="form-control"
             defaultValue={this.props.value}
+            disabled={!this.props?.column?.editable}
             onChange={(val) => {
                 this.setState({
                     inputText: val,

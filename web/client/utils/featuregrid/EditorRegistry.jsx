@@ -41,6 +41,7 @@ module.exports = {
             Editors[name] = editors;
         }
     },
+    regexTestor: testRule,
     remove: (name) => {
         if (isPresent(name)) {
             try {
@@ -55,13 +56,12 @@ module.exports = {
     clean: () => {
         Editors = {};
     },
-    getCustomEditor: (editor, {type, generalProps = {}, props}) => {
-        // editor contain allowEdit by field
+    getCustomEditor: ({attribute, url, typeName}, rules = [], {type, generalProps = {}, props}) => {
+        const editor = find(rules, (r) => testRule(r.regex, {attribute, url, typeName }));
         if (!!editor) {
             const result = getEditor(type, editor.editor, {...props, ...generalProps, ...editor.editorProps || {}});
             return result;
         }
         return null;
-    },
-    regexTestor: testRule
+    }
 };
