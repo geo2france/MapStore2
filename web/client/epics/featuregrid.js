@@ -144,7 +144,8 @@ import {
     getAttributeFilters,
     selectedLayerSelector,
     multiSelect,
-    paginationSelector, isViewportFilterActive, viewportFilter
+    paginationSelector, isViewportFilterActive, viewportFilter,
+    isAttributesEditorSelector
 } from '../selectors/featuregrid';
 
 import { error, warning } from '../actions/notifications';
@@ -783,7 +784,7 @@ export const handleEditFeature = (action$, store) => action$.ofType(START_EDITIN
  */
 export const handleDrawFeature = (action$, store) => action$.ofType(START_DRAWING_FEATURE)
     .switchMap( () => {
-        const state = store.getState();
+                const state = store.getState();
         const describe = describeSelector(state);
         const defaultFeatureProj = getDefaultFeatureProjection();
         const geomType = findGeometryProperty(describe).localType;
@@ -890,6 +891,7 @@ export const deleteGeometryFeature = (action$, store) => action$.ofType(DELETE_G
  */
 export const triggerDrawSupportOnSelectionChange = (action$, store) => action$.ofType(SELECT_FEATURES, DESELECT_FEATURES, CLEAR_CHANGES, TOGGLE_MODE)
     .filter(() => modeSelector(store.getState()) === MODES.EDIT && hasSupportedGeometry(store.getState()))
+    .filter(() => !isAttributesEditorSelector(store.getState()))
     .switchMap( (a) => {
         const state = store.getState();
         let useOriginal = a.type === CLEAR_CHANGES;
