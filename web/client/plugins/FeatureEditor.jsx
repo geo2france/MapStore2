@@ -55,8 +55,6 @@ import {isViewportFilterActive} from "../selectors/featuregrid";
   * Configuring with ["ALL"] allows all users to have access regardless of user's permission.
   * @prop {string[]} cfg.editingAllowedGroups array of user groups allowed to enter in edit mode.
   * When configured, gives the editing permissions to users members of one of the groups listed.
-  * @prop {string[]} cfg.editingAttributesAllowedRoles array of user roles allowed to enter in edit mode and change attributes values.
-  * When configured, remove the geometry editing permissions to users members of one of the roles listed.
   * @prop {string[]} cfg.editingAttributesAllowedGroups array of user groups allowed to enter in edit mode change attributes values.
   * When configured, remove the geometry editing permissions to users members of one of the groups listed.
   * @prop {boolean} cfg.virtualScroll default true. Activates virtualScroll. When false the grid uses normal pagination
@@ -178,7 +176,6 @@ const EditorPlugin = connect(
                 virtualScroll: this.props.virtualScroll ?? true,
                 editingAllowedRoles: this.props.editingAllowedRoles,
                 editingAllowedGroups: this.props.editingAllowedGroups,
-                editingAttributesAllowedRoles: this.props.editingAttributesAllowedRoles,
                 editingAttributesAllowedGroups: this.props.editingAttributesAllowedGroups,
                 maxStoredPages: this.props.maxStoredPages
             });
@@ -187,11 +184,10 @@ const EditorPlugin = connect(
             // Re-Initialize configurations
             !this.props.viewportFilterInitialized && this.props.filterByViewport && this.props.setViewportFilter(true);
 
-            const {virtualScroll, editingAllowedRoles, editingAllowedGroups, editingAttributesAllowedRoles, editingAttributesAllowedGroups, maxStoredPages} = this.props ?? {};
+            const {virtualScroll, editingAllowedRoles, editingAllowedGroups, editingAttributesAllowedGroups, maxStoredPages} = this.props ?? {};
             if (prevProps.virtualScroll !== virtualScroll
                 || !isEqual(prevProps.editingAllowedRoles, editingAllowedRoles)
                 || !isEqual(prevProps.editingAllowedGroups, editingAllowedGroups)
-                || !isEqual(prevProps.editingAttributesAllowedRoles, editingAttributesAllowedRoles)
                 || !isEqual(prevProps.editingAttributesAllowedGroups, editingAttributesAllowedGroups)
                 || prevProps.maxStoredPages !== maxStoredPages
             ) {
@@ -199,7 +195,6 @@ const EditorPlugin = connect(
                     virtualScroll: virtualScroll ?? true,
                     editingAllowedRoles,
                     editingAllowedGroups,
-                    editingAttributesAllowedRoles,
                     editingAttributesAllowedGroups,
                     maxStoredPages
                 });

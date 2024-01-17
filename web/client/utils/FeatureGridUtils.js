@@ -117,12 +117,12 @@ export const getCurrentPaginationOptions = ({ startPage, endPage }, oldPages, si
     return { startIndex: nPs[0] * size, maxFeatures: needPages * size };
 };
 
-export const controlFieldEditable = (editable, customEditorOptions, regexInfos) => {
+export const controlFieldEditable = (editable, customEditorOptions, regexInfos, isAttributeEditor) => {
     let isEditable = editable;
     let hasCustomOptions = find(customEditorOptions, (r) => EditorRegistry.regexTestor(r.regex, regexInfos));
     // use allowEdit only in EDIT mode and only if allowEdit exists for this field
     if (!hasCustomOptions) return isEditable;
-
+    // only for attributes editor
     if (hasCustomOptions.hasOwnProperty("allowEdit") && isEditable) {
         isEditable = hasCustomOptions.allowEdit;
     }
@@ -139,7 +139,7 @@ export const controlFieldEditable = (editable, customEditorOptions, regexInfos) 
  * @returns
  */
 export const featureTypeToGridColumns = (
-    {customEditorOptions, url, typeName},
+    {customEditorOptions, url, typeName, isEditingAllowed, isAttributeEditor, isAdmin},
     describe,
     columnSettings = {},
     fields = [],
@@ -148,7 +148,7 @@ export const featureTypeToGridColumns = (
     getAttributeFields(describe).filter(e => !(columnSettings[e.name] && columnSettings[e.name].hide)).map((desc) => {
         const option = options.find(o => o.name === desc.name);
         const field = fields.find(f => f.name === desc.name) || {};
-        const isEditable = controlFieldEditable(editable, customEditorOptions, { url, typeName, attribute: desc.name });
+        const isEditable = isAdmin || controlFieldEditable(editable, customEditorOptions, { url, typeName, attribute: desc.name }, isEditingAllowed, isAttributeEditor);
         return {
             sortable,
             key: desc.name,

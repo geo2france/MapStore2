@@ -83,11 +83,10 @@ const featuresToGrid = compose(
         props => ({displayFilters: props.enableColumnFilters})
     ),
     withPropsOnChange(
-        ["editingAllowedRoles", "editingAllowedGroups", "editingAttributesAllowedRoles", "editingAttributesAllowedGroups", "virtualScroll"],
+        ["editingAllowedRoles", "editingAllowedGroups", "editingAttributesAllowedGroups", "virtualScroll"],
         props => ({
             editingAllowedRoles: props.editingAllowedRoles,
             editingAllowedGroups: props.editingAllowedGroups,
-            editingAttributesAllowedRoles: props.editingAttributesAllowedRoles,
             editingAttributesAllowedGroups: props.editingAttributesAllowedGroups,            
             initPlugin: props.initPlugin
         })
@@ -157,7 +156,10 @@ const featuresToGrid = compose(
             const customEditorInfos = {
                 customEditorOptions: props.customEditorsOptions && props.customEditorsOptions.rules || [],
                 url: props.url,
-                typeName: props.typeName
+                typeName: props.typeName,
+                isEditingAllowed: props.isEditingAllowed,
+                isAttributeEditor: props.isAttributeEditor,
+                isAdmin: props.isAdmin
             };
 
             const featureTypeToCols = featureTypeToGridColumns(customEditorInfos, props.describeFeatureType, props.columnSettings, props.fields, colsOptions, {
@@ -168,7 +170,7 @@ const featuresToGrid = compose(
                         autocompleteEnabled: props.autocompleteEnabled,
                         url: props.url,
                         typeName: props.typeName,
-                        disabled: !field.editable
+                        disabled: !field.editable && !props.select.filter(x => x._new)[0]
                     };
                     const regexProps = {attribute: desc.name, url: props.url, typeName: props.typeName};
                     const rules = props.customEditorsOptions && props.customEditorsOptions.rules || [];

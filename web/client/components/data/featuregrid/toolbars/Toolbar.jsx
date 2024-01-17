@@ -87,12 +87,12 @@ const standardButtons = {
         visible={mode === "EDIT" && !isAttributeEditor && selectedCount > 0 && !hasChanges && !hasNewFeatures}
         onClick={events.deleteFeatures}
         glyph="trash-square"/>),
-    saveFeature: ({isAttributeEditor, saving = false, saved = false, disabled, mode, hasChanges, hasNewFeatures, events = {}}) => (<TButton
+    saveFeature: ({saving = false, saved = false, disabled, mode, hasChanges, hasNewFeatures, events = {}}) => (<TButton
         id="save-feature"
         keyProp="save-feature"
         tooltipId={getSaveMessageId({saving, saved})}
         disabled={saving || saved || disabled}
-        visible={mode === "EDIT" && !isAttributeEditor && hasChanges || hasNewFeatures}
+        visible={mode === "EDIT" && hasChanges || hasNewFeatures}
         active={saved}
         onClick={events.saveChanges}
         glyph="floppy-disk"/>),

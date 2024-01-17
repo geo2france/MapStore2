@@ -77,7 +77,6 @@ export const selectedLayerParamsSelector = state => get(getLayerById(state, sele
 export const selectedLayerSelector = state => getLayerById(state, selectedLayerIdSelector(state));
 export const editingAllowedRolesSelector = state => get(state, "featuregrid.editingAllowedRoles", ["ADMIN"]);
 export const editingAllowedGroupsSelector = state => get(state, "featuregrid.editingAllowedGroups", []);
-export const editingAttributesAllowedRolesSelector = state => get(state, "featuregrid.editingAttributesAllowedRoles", []);
 export const editingAttributesAllowedGroupsSelector = state => get(state, "featuregrid.editingAttributesAllowedGroups", []);
 export const canEditSelector = state => state && state.featuregrid && state.featuregrid.canEdit;
 /**
@@ -206,18 +205,14 @@ export const isEditingAllowedSelector = (state) => {
 };
 
 export const isAttributesEditorSelector = (state) => {
-    const editAllowed = isEditingAllowedSelector(state);
-    const allowedAttributeEditorRoles = editingAttributesAllowedRolesSelector(state);
     const allowedAttributeEditorGroups = editingAttributesAllowedGroupsSelector(state);
     const isAttributesOnlyAllowed = isUserAllowedSelectorCreator({
-        allowedRoles: allowedAttributeEditorRoles,
+        allowedRoles: [],
         allowedGroups: allowedAttributeEditorGroups
     })(state);
-    return editAllowed && isAttributesOnlyAllowed;
-    
-
-
+    return isAttributesOnlyAllowed;
 }
+
 export const paginationSelector = state => get(state, "featuregrid.pagination");
 export const useLayerFilterSelector = state => get(state, "featuregrid.useLayerFilter", true);
 

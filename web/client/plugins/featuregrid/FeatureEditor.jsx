@@ -18,11 +18,11 @@ import Grid from '../../components/data/featuregrid/FeatureGrid';
 import BorderLayout from '../../components/layout/BorderLayout';
 import { toChangesMap} from '../../utils/FeatureGridUtils';
 import { sizeChange, setUp, setSyncTool } from '../../actions/featuregrid';
-import {mapLayoutValuesSelector} from '../../selectors/maplayout';
+import { mapLayoutValuesSelector } from '../../selectors/maplayout';
 import {paginationInfo, describeSelector, wfsURLSelector, typeNameSelector, isSyncWmsActive} from '../../selectors/query';
-import {modeSelector, changesSelector, newFeaturesSelector, hasChangesSelector, selectedLayerFieldsSelector, selectedFeaturesSelector, getDockSize} from '../../selectors/featuregrid';
-
-import {getPanels, getHeader, getFooter, getDialogs, getEmptyRowsView, getFilterRenderers} from './panels/index';
+import {isAttributesEditorSelector, isEditingAllowedSelector, modeSelector, changesSelector, newFeaturesSelector, hasChangesSelector, selectedLayerFieldsSelector, selectedFeaturesSelector, getDockSize} from '../../selectors/featuregrid';
+import { isAdminUserSelector } from '../../selectors/security';
+import { getPanels, getHeader, getFooter, getDialogs, getEmptyRowsView, getFilterRenderers } from './panels/index';
 import {gridTools, gridEvents, pageEvents, toolbarEvents} from './index';
 
 const EMPTY_ARR = [];
@@ -204,7 +204,6 @@ const FeatureDock = (props = {
                                     toolbarItems,
                                     hideCloseButton: props.hideCloseButton,
                                     hideLayerTitle: props.hideLayerTitle,
-                                    editingAttributesAllowedRoles: props.editingAttributesAllowedRoles,
                                     editingAttributesAllowedGroups: props.editingAttributesAllowedGroups,
                                     pluginCfg: props.pluginCfg
                                 })}
@@ -247,6 +246,9 @@ const FeatureDock = (props = {
                                     size={props.size}
                                     actionOpts={{maxZoom}}
                                     dateFormats={props.dateFormats}
+                                    isEditingAllowed={props.isEditingAllowed}
+                                    isAttributeEditor={props.isAttributeEditor}
+                                    isAdmin={props.isAdmin}
                                 />
                             </BorderLayout> }
 
@@ -257,6 +259,8 @@ const FeatureDock = (props = {
 };
 export const selector = createStructuredSelector({
     open: state => get(state, "featuregrid.open"),
+    isEditingAllowed: isEditingAllowedSelector,
+    isAttributeEditor: isAttributesEditorSelector,
     customEditorsOptions: state => get(state, "featuregrid.customEditorsOptions"),
     autocompleteEnabled: state => get(state, "queryform.autocompleteEnabled"),
     url: state => wfsURLSelector(state),
@@ -275,7 +279,8 @@ export const selector = createStructuredSelector({
     enableColumnFilters: state => get(state, 'featuregrid.enableColumnFilters'),
     pagination: createStructuredSelector(paginationInfo),
     pages: state => get(state, 'featuregrid.pages'),
-    size: state => get(state, 'featuregrid.pagination.size')
+    size: state => get(state, 'featuregrid.pagination.size'),
+    isAdmin: isAdminUserSelector,
 });
 
 const EditorPlugin = compose(
