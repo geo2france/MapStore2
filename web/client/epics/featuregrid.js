@@ -12,7 +12,7 @@ import { LOCATION_CHANGE } from 'connected-react-router';
 import axios from '../libs/ajax';
 import bbox from '@turf/bbox';
 import { fidFilter } from '../utils/ogc/Filter/filter';
-import { getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages, setAttributesFromheader  } from '../utils/FeatureGridUtils';
+import { getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages, getAttributesFromUserInfos  } from '../utils/FeatureGridUtils';
 
 import assign from 'object-assign';
 import {
@@ -142,6 +142,7 @@ import {
     hasNewFeaturesSelector,
     selectedFeatureSelector,
     selectedLayerIdSelector,
+    selectedLayerNameSelector,
     isDrawingSelector,
     modeSelector,
     isFeatureGridOpen,
@@ -724,7 +725,6 @@ export const updateSelectedOnSaveOrCloseFeatureGrid = (action$) =>
 export const savePendingFeatureGridChanges = (action$, store) =>
     action$.ofType(SAVE_CHANGES).switchMap( () =>
     {
-        console.log("EPICS - Save Changes");
         return Rx.Observable.of(featureSaving())
             .concat(
                 createSaveChangesFlow(
@@ -746,15 +746,17 @@ export const handleFeatureChanges = (action$, store) =>
         action$.ofType(GRID_ROW_UPDATE, CREATE_NEW_FEATURE),
     )
         .flatMap((action) => {
-            console.log("EPICS - Do On Feature Modified");
-            console.log(action);
-            const featureProps = action.feature;
-            const hasNewFeatures = hasNewFeaturesSelector(store.getState());
-            const hasChanges = hasChangesSelector(store.getState());
+            const layerName = selectedLayerNameSelector(store.getState());
             const userInfos = userSelector(store.getState());
             const options = getCustomEditorsOptions(store.getState());
-            const changesWithHeaderInfos = setAttributesFromheader(action.updated, options, userInfos);
-            return Rx.Observable.of(featureModified(action.features, changesWithHeaderInfos));
+            let rules = options?.rules.filter(rule => {
+                const layerRegEx = get(rule, "regex.typeName");
+                let regExLayer = new RegExp(layerRegEx);
+                return regExLayer.test(layerName);
+            });
+            const retrievedUserInfos = !isEmpty(rules) ? getAttributesFromUserInfos(rules, userInfos) : {};
+            const updatedInfos = { ...action.updated, ...retrievedUserInfos };
+            return Rx.Observable.of(featureModified(action.features, updatedInfos));
         });
 /**
  * trigger WFS transaction stream on DELETE_SELECTED_FEATURES action
@@ -786,7 +788,6 @@ export const deleteSelectedFeatureGridFeatures = (action$, store) =>
  */
 export const handleEditFeature = (action$, store) => action$.ofType(START_EDITING_FEATURE)
     .switchMap(() => {
-        console.log("EPICS - Start Editing Feature");
         const state = store.getState();
         const describe = describeSelector(state);
         const defaultFeatureProj = getDefaultFeatureProjection();

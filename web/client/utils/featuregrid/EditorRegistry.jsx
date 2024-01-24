@@ -41,7 +41,7 @@ module.exports = {
             Editors[name] = editors;
         }
     },
-    regexTestor: testRule,
+    regexFeatureGridTestor: testRule,
     remove: (name) => {
         if (isPresent(name)) {
             try {

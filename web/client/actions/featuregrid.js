@@ -54,7 +54,6 @@ export const LAUNCH_UPDATE_FILTER_FUNC = 'FEATUREGRID:LAUNCH_UPDATE_FILTER_FUNC'
 export const SET_SYNC_TOOL = 'FEATUREGRID:SET_SYNC_TOOL';
 export const SET_VIEWPORT_FILTER = 'FEATUREGRID:SET_VIEWPORT_FILTER';
 export const GRID_ROW_UPDATE = "FEATUREGRID:GRID_ROW_UPDATE";
-export const SET_HEADER_TO_FIELDS = "FEATUREGRID:SET_HEADER_TO_FIELDS";
 
 export const MODES = {
     EDIT: "EDIT",
@@ -258,21 +257,11 @@ export function toggleViewMode() {
     };
 }
 export function featureModified(features, updated, user = {}) {
-    console.log("ACTION - feature modified");
     return {
         type: FEATURES_MODIFIED,
         features,
         updated
     };
-}
-
-export function setHeaderToFields(features, updated, infos = {}) {
-    return {
-        type: SET_HEADER_TO_FIELDS,
-        features,
-        updated,
-        infos
-    }
 }
 
 export function gridRowUpdate(features, updated) {
@@ -283,7 +272,6 @@ export function gridRowUpdate(features, updated) {
     };
 }
 export function createNewFeatures(features, user = {}) {
-    console.log("ACTION - create feature");
     return {
         type: CREATE_NEW_FEATURE,
         features,

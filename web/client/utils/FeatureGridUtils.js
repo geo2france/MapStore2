@@ -119,7 +119,7 @@ export const getCurrentPaginationOptions = ({ startPage, endPage }, oldPages, si
 
 export const controlFieldEditable = (editable, customEditorOptions, regexInfos, isAttributeEditor) => {
     let isEditable = editable;
-    let hasCustomOptions = find(customEditorOptions, (r) => EditorRegistry.regexTestor(r.regex, regexInfos));
+    let hasCustomOptions = find(customEditorOptions, (r) => EditorRegistry.regexFeatureGridTestor(r.regex, regexInfos));
     // use allowEdit only in EDIT mode and only if allowEdit exists for this field
     if (!hasCustomOptions) return isEditable;
     // only for attributes editor
@@ -400,20 +400,18 @@ export const supportsFeatureEditing = (layer) => includes(supportedEditLayerType
  */
 export const areLayerFeaturesEditable = (layer) =>  !layer?.disableFeaturesEditing && supportsFeatureEditing(layer);
 
-export const setAttributesFromheader = (updated, customEditorsOptions, user) => {
-    const changesWithHeaderInfos = { ...updated };
+export const getAttributesFromUserInfos = (customEditorsRules, user) => {
+    const userInfosMapping = {};
     // get fields to insert
-    customEditorsOptions.rules.filter(rule => {
-        // TODO : need to test if feature have field
-
+    customEditorsRules.filter(x => x.hasOwnProperty("getValueFrom")).forEach(rule => {
         // get fields values from user
-        const headerFieldName = get(rule, "editorProps.headerField");
-        const fromUserValue = get(user, headerFieldName);
-        const fieldNameToChange = get(rule, "regex.attribute");
+        const userPropKey = get(rule, "getValueFrom.user");
+        const userKeyValue = get(user, userPropKey) || find(user.attribute, (n) => n.name === userPropKey)["value"];
+        const featureFieldToChange = get(rule, "regex.attribute");
         // add to updated object
-        if (fromUserValue && fieldNameToChange) {
-            changesWithHeaderInfos[fieldNameToChange] = fromUserValue;
+        if (userKeyValue && featureFieldToChange) {
+            userInfosMapping[featureFieldToChange] = userKeyValue;
         }
     })
-    return changesWithHeaderInfos;
+    return userInfosMapping;
 }
