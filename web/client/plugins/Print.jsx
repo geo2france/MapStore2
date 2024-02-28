@@ -547,6 +547,9 @@ export default {
                             .filter(layer => layer.group === "background" && layer.visibility && this.isAllowed(layer, projection)));
                         return !background;
                     };
+                    filterAnnotationFeaturesByVisibility = (layer) => {
+                        return {...layer, ...(!isNil(layer.features) ? {features: layer.features?.filter(ft => isNil(ft?.properties?.visibility) ? true : ft?.properties?.visibility)} : {})};
+                    }
                     filterLayers = (layers, zoom, projection) => {
                         const resolution = this.getPreviewResolution(zoom, projection);
 
