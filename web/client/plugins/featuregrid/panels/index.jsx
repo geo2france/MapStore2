@@ -48,7 +48,8 @@ import {
     timeSyncActive,
     isViewportFilterActive,
     isFilterByViewportSupported,
-    selectedLayerSelector
+    selectedLayerSelector,
+    restrictedAreaSelector
 } from '../../../selectors/featuregrid';
 import { mapLayoutValuesSelector } from '../../../selectors/maplayout';
 import {isCesium, mapTypeSelector} from '../../../selectors/maptype';
@@ -97,6 +98,7 @@ const Toolbar = connect(
         isSearchAllowed: (state) => !isCesium(state),
         isEditingAllowed: isEditingAllowedSelector,
         isAttributeEditor: isAttributesEditorSelector,
+        restrictedArea: restrictedAreaSelector,
         hasSupportedGeometry,
         isFilterActive,
         showTimeSyncButton: showTimeSync,
@@ -109,7 +111,7 @@ const Toolbar = connect(
         editorHeight: getDockSize,
         viewportFilter: isViewportFilterActive,
         isFilterByViewportSupported,
-        layer: selectedLayerSelector
+        layer: selectedLayerSelector,
     }),
     (dispatch) => ({events: bindActionCreators(toolbarEvents, dispatch)})
 )(ToolbarComp);
