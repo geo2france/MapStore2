@@ -177,7 +177,8 @@ const EditorPlugin = connect(
                 editingAllowedRoles: this.props.editingAllowedRoles,
                 editingAllowedGroups: this.props.editingAllowedGroups,
                 editingAttributesAllowedGroups: this.props.editingAttributesAllowedGroups,
-                maxStoredPages: this.props.maxStoredPages
+                maxStoredPages: this.props.maxStoredPages,
+                restrictedAreaUrl: this.props.restrictedAreaUrl
             });
         },
         componentDidUpdate(prevProps) {

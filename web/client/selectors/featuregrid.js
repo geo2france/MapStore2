@@ -214,6 +214,9 @@ export const isAttributesEditorSelector = (state) => {
     return isAttributesOnlyAllowed;
 }
 
+export const restrictedAreaUrlSelector = state => get(state, "featuregrid.restrictedAreaUrl");
+export const restrictedAreaSelector = state => get(state, "featuregrid.restrictedArea");
+
 export const paginationSelector = state => get(state, "featuregrid.pagination");
 export const useLayerFilterSelector = state => get(state, "featuregrid.useLayerFilter", true);
 
