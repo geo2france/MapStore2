@@ -20,7 +20,7 @@ import { toChangesMap} from '../../utils/FeatureGridUtils';
 import { sizeChange, setUp, setSyncTool } from '../../actions/featuregrid';
 import { mapLayoutValuesSelector } from '../../selectors/maplayout';
 import {paginationInfo, describeSelector, wfsURLSelector, typeNameSelector, isSyncWmsActive} from '../../selectors/query';
-import {isAttributesEditorSelector, isEditingAllowedSelector, modeSelector, changesSelector, newFeaturesSelector, hasChangesSelector, selectedLayerFieldsSelector, selectedFeaturesSelector, getDockSize, restrictedAreaSelector} from '../../selectors/featuregrid';
+import {isAttributesEditorSelector, isEditingAllowedSelector, modeSelector, changesSelector, newFeaturesSelector, hasChangesSelector, selectedLayerFieldsSelector, selectedFeaturesSelector, getDockSize, restrictedAreaSelector, restrictedAreaUrlSelector} from '../../selectors/featuregrid';
 import { isAdminUserSelector, userSelector } from '../../selectors/security';
 import { getPanels, getHeader, getFooter, getDialogs, getEmptyRowsView, getFilterRenderers } from './panels/index';
 import {gridTools, gridEvents, pageEvents, toolbarEvents} from './index';

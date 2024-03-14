@@ -83,12 +83,13 @@ const featuresToGrid = compose(
         props => ({displayFilters: props.enableColumnFilters})
     ),
     withPropsOnChange(
-        ["editingAllowedRoles", "editingAllowedGroups", "editingAttributesAllowedGroups", "virtualScroll"],
+        ["editingAllowedRoles", "editingAllowedGroups", "editingAttributesAllowedGroups", "virtualScroll", "restrictedAreaUrl"],
         props => ({
             editingAllowedRoles: props.editingAllowedRoles,
             editingAllowedGroups: props.editingAllowedGroups,
             editingAttributesAllowedGroups: props.editingAttributesAllowedGroups,            
-            initPlugin: props.initPlugin
+            initPlugin: props.initPlugin,
+            restrictedAreaUrl: props.restrictedAreaUrl
         })
     ),
     withPropsOnChange(

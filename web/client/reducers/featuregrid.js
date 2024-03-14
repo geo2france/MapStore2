@@ -63,6 +63,7 @@ const emptyResultsState = {
     editingAllowedGroups: [],
     editingAttributesAllowedGroups: [],
     editingAttributesAllowedGroups: ["ADMIN"],
+    restrictedAreaUrl: "",
     enableColumnFilters: true,
     showFilteredObject: false,
     timeSync: false,
@@ -159,9 +160,9 @@ function featuregrid(state = emptyResultsState, action) {
             editingAllowedRoles: action.options.editingAllowedRoles || state.editingAllowedRoles || ["ADMIN"],
             editingAllowedGroups: action.options.editingAllowedGroups || state.editingAllowedGroups || [],
             editingAttributesAllowedGroups: action.options.editingAttributesAllowedGroups || state.editingAttributesAllowedGroups || [],
+            restrictedAreaUrl: action.options.restrictedAreaUrl || state.restrictedAreaUrl || "",
             virtualScroll: !!action.options.virtualScroll,
-            maxStoredPages: action.options.maxStoredPages || 5,
-            restrictedAreaUrl: action.options.restrictedAreaUrl
+            maxStoredPages: action.options.maxStoredPages || 5
         });
     }
     case LOAD_MORE_FEATURES:

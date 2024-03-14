@@ -1331,6 +1331,9 @@ export const requestRestrictedArea = (action$, store) =>
     action$.ofType(SET_UP)
         .switchMap((action) => {
             const url = action.url || restrictedAreaUrlSelector(store.getState());
+            if (!url) {
+                return Rx.Observable.empty();
+            }
             console.log(url);
             return Rx.Observable.defer(() => fetch(url).then(r => r?.json?.()))
                 .switchMap(result => Rx.Observable.of(setRestrictedArea(result)))
