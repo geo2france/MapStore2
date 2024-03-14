@@ -11,6 +11,7 @@ import {get, head, isEmpty, find, castArray, includes, reduce} from 'lodash';
 import { LOCATION_CHANGE } from 'connected-react-router';
 import axios from '../libs/ajax';
 import bbox from '@turf/bbox';
+import booleanIntersects from "@turf/boolean-intersects";
 import { fidFilter } from '../utils/ogc/Filter/filter';
 import { getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages, getAttributesFromUserInfos  } from '../utils/FeatureGridUtils';
 
@@ -112,7 +113,10 @@ import {
     launchUpdateFilterFunc,
     LAUNCH_UPDATE_FILTER_FUNC, SET_LAYER,
     SET_VIEWPORT_FILTER, setViewportFilter,
-    featureModified
+    featureModified,
+    SET_RESTRICTED_AREA,
+    SET_UP,
+    setRestrictedArea
 } from '../actions/featuregrid';
 
 import {
@@ -154,7 +158,9 @@ import {
     getCustomEditorsOptions,
     multiSelect,
     paginationSelector, isViewportFilterActive, viewportFilter,
-    isAttributesEditorSelector
+    isAttributesEditorSelector,
+    restrictedAreaUrlSelector,
+    restrictedAreaSelector
 } from '../selectors/featuregrid';
 
 import { error, warning } from '../actions/notifications';
@@ -214,9 +220,16 @@ const setupDrawSupport = (state, original) => {
         return feature;
     });
 
-    // Remove features with geometry null or id "empty_row"
-    const cleanFeatures = features.filter(ft => ft.geometry !== null || ft.id !== 'empty_row');
-
+    // Remove features with geometry null or id "empty_row" or not allowed by restricted area
+    const cleanFeatures = features.filter(ft => {
+        const restrictedArea = restrictedAreaSelector(state);
+        let isValidFeature = ft.geometry !== null || ft.id !== 'empty_row';
+        if (isValidFeature && !isEmpty(restrictedArea)) {
+            // allow only feature inside restricted area
+            isValidFeature = booleanIntersects(restrictedArea, ft.geometry);
+        }
+        return isValidFeature
+    });
     if (cleanFeatures.length > 0) {
         return Rx.Observable.from([
             changeDrawingStatus("drawOrEdit", geomType, "featureGrid", cleanFeatures, drawOptions)
@@ -919,7 +932,8 @@ export const deleteGeometryFeature = (action$, store) => action$.ofType(DELETE_G
 export const triggerDrawSupportOnSelectionChange = (action$, store) => action$.ofType(SELECT_FEATURES, DESELECT_FEATURES, CLEAR_CHANGES, TOGGLE_MODE)
     .filter(() => modeSelector(store.getState()) === MODES.EDIT && hasSupportedGeometry(store.getState()))
     .filter(() => !isAttributesEditorSelector(store.getState()))
-    .switchMap( (a) => {
+    // control area with Turf and restrictedAreaSelector
+    .switchMap((a) => {
         const state = store.getState();
         let useOriginal = a.type === CLEAR_CHANGES;
         return setupDrawSupport(state, useOriginal);
@@ -1312,3 +1326,12 @@ export const resetViewportFilter = (action$, store) =>
         return viewportFilter(store.getState()) !== null ? Rx.Observable.of(setViewportFilter(null))
             : Rx.Observable.empty();
     });
+
+export const requestRestrictedArea = (action$, store) => 
+    action$.ofType(SET_UP)
+        .switchMap((action) => {
+            const url = action.url || restrictedAreaUrlSelector(store.getState());
+            console.log(url);
+            return Rx.Observable.defer(() => fetch(url).then(r => r?.json?.()))
+                .switchMap(result => Rx.Observable.of(setRestrictedArea(result)))
+    })

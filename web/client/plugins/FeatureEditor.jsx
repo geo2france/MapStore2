@@ -177,13 +177,14 @@ const EditorPlugin = connect(
                 editingAllowedRoles: this.props.editingAllowedRoles,
                 editingAllowedGroups: this.props.editingAllowedGroups,
                 editingAttributesAllowedGroups: this.props.editingAttributesAllowedGroups,
-                maxStoredPages: this.props.maxStoredPages
+                restrictedARea: this.props.restrictedArea,
+                maxStoredPages: this.props.maxStoredPages,
+                restrictedAreaUrl: this.props.restrictedAreaUrl
             });
         },
         componentDidUpdate(prevProps) {
             // Re-Initialize configurations
             !this.props.viewportFilterInitialized && this.props.filterByViewport && this.props.setViewportFilter(true);
-
             const {virtualScroll, editingAllowedRoles, editingAllowedGroups, editingAttributesAllowedGroups, maxStoredPages} = this.props ?? {};
             if (prevProps.virtualScroll !== virtualScroll
                 || !isEqual(prevProps.editingAllowedRoles, editingAllowedRoles)

@@ -34,6 +34,7 @@ export const newFeaturesSelector = state => state && state.featuregrid && state.
 export const selectedFeatureSelector = state => head(selectedFeaturesSelector(state));
 export const getCustomEditorsOptions = state => get(state, "featuregrid.customEditorsOptions");
 
+
 export const geomTypeSelectedFeatureSelector = state => {
     let desc = describeSelector(state);
     if (desc) {
@@ -213,6 +214,9 @@ export const isAttributesEditorSelector = (state) => {
     })(state);
     return isAttributesOnlyAllowed;
 }
+
+export const restrictedAreaUrlSelector = state => get(state, "featuregrid.restrictedAreaUrl");
+export const restrictedAreaSelector = state => get(state, "featuregrid.restrictedArea");
 
 export const paginationSelector = state => get(state, "featuregrid.pagination");
 export const useLayerFilterSelector = state => get(state, "featuregrid.useLayerFilter", true);

@@ -361,6 +361,7 @@
               "cfg": {
                 "editingAttributesAllowedGroups": ["attributesEditor"],
                 "editingAttributesAllowedRoles": ["ATTRIBUTES_EDITOR"],
+                "restrictedAreaUrl": "/console/account/areaofcompetence.json",
                 "editingAllowedRoles": [
                   "ADMIN",
                   "USER"

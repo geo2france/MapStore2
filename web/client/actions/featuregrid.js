@@ -8,6 +8,8 @@
 
 export const SET_UP = 'FEATUREGRID:SET_UP';
 export const SELECT_FEATURES = 'FEATUREGRID:SELECT_FEATURES';
+export const GET_RESTRICTED_AREA = "FEATUREGRID:GET_RESTRICTED_AREA";
+export const SET_RESTRICTED_AREA = "FEATUREGRID:SET_RESTRICTED_AREA";
 export const DESELECT_FEATURES = 'FEATUREGRID:DESELECT_FEATURES';
 export const CLEAR_SELECTION = 'FEATUREGRID:CLEAR_SELECTION';
 export const SET_SELECTION_OPTIONS = 'FEATUREGRID:SET_SELECTION_OPTIONS';
@@ -413,4 +415,13 @@ export const setSyncTool = (syncWmsFilter) => ({
 export const setViewportFilter = (viewportFilter) => ({
     type: SET_VIEWPORT_FILTER,
     value: viewportFilter
+});
+
+export const getRestrictedArea = () => ({
+    type: GET_RESTRICTED_AREA
+});
+
+export const setRestrictedArea = (area) => ({
+    type: SET_RESTRICTED_AREA,
+    area: area
 });
