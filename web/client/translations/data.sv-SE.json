@@ -1645,6 +1645,7 @@
                 "syncOnMap": "Synkronisera karta med filter",
                 "enableTimeSync": "Synkronisera med vald tid eller tidsintervall",
                 "disableTimeSync": "Synkronisera inte med den valda tiden eller intervallet",
+                "restrictedByArea": "Synkronisera karta med filter",
                 "createNewChart": "Skapa ett diagram för det valda lagret"
             }
         },

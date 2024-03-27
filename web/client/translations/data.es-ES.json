@@ -1827,6 +1827,7 @@
                 "syncOnMap": "Sincronizar mapa con filtro",
                 "enableTimeSync": "Sincronizar con el tiempo o el intervalo de tiempo seleccionado",
                 "disableTimeSync": "No sincronizar con el tiempo o el intervalo de tiempo seleccionado",
+                "restrictedByArea": "Vista restringida por una zona",
                 "createNewChart": "Crea un gráfico para la capa seleccionada",
                 "enableSnapping": "Activar ajuste",
                 "disableSnapping": "Desactivar ajuste",

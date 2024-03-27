@@ -1381,6 +1381,7 @@
                 "syncOnMap": "Uskladi kartu sa aktivnim filtrom",
                 "enableTimeSync": "Sinkroniziraj sa odabranim vremenom ili vremenskim rasponom",
                 "disableTimeSync": "isključi sinkronizaciju sa odabranim vremenom ili vremenskim rasponom",
+                "restrictedByArea": "Egy terület által korlátozott nézet",
                 "createNewChart": "Kreiraj grafikon za odabrani sloj"
             }
         },

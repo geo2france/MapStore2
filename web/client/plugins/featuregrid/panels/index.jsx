@@ -49,7 +49,7 @@ import {
     isViewportFilterActive,
     isFilterByViewportSupported,
     selectedLayerSelector,
-    restrictedAreaSelector
+    restrictedAreaSelector,
 } from '../../../selectors/featuregrid';
 import { mapLayoutValuesSelector } from '../../../selectors/maplayout';
 import {isCesium, mapTypeSelector} from '../../../selectors/maptype';

@@ -26,7 +26,7 @@ import {
 import requestBuilder from '../utils/ogc/WFST/RequestBuilder';
 import { findGeometryProperty } from '../utils/ogc/WFS/base';
 import { FEATURE_INFO_CLICK, HIDE_MAPINFO_MARKER, closeIdentify, hideMapinfoMarker } from '../actions/mapInfo';
-
+import { LOGIN_SUCCESS, LOGOUT } from "../actions/security"
 import {
     query,
     QUERY,
@@ -114,8 +114,9 @@ import {
     LAUNCH_UPDATE_FILTER_FUNC, SET_LAYER,
     SET_VIEWPORT_FILTER, setViewportFilter,
     featureModified,
-    SET_UP,
-    setRestrictedArea
+    setRestrictedArea,
+    setRestrictedAreaFilter,
+    SET_RESTRICTED_AREA
 } from '../actions/featuregrid';
 
 import {
@@ -126,6 +127,8 @@ import {
 } from '../actions/controls';
 
 import {
+    isAdminUserSelector,
+    isLoggedIn,
     userSelector
 } from "../selectors/security";
 
@@ -159,7 +162,9 @@ import {
     paginationSelector, isViewportFilterActive, viewportFilter,
     isAttributesEditorSelector,
     restrictedAreaUrlSelector,
-    restrictedAreaSelector
+    restrictedAreaSelector,
+    restrictedAreaFilter,
+    additionnalGridFilters
 } from '../selectors/featuregrid';
 
 import { error, warning } from '../actions/notifications';
@@ -279,13 +284,14 @@ const createDeleteFlow = (features, describeFeatureType, url) => save(
     url,
     createDeleteTransaction(features, requestBuilder(describeFeatureType))
 );
+
 const createLoadPageFlow = (store) => ({page, size, reason} = {}) => {
     const state = store.getState();
     return Rx.Observable.of( query(
         wfsURL(state),
         addPagination({
             ...(wfsFilter(state)),
-            ...viewportFilter(state)
+            ...additionnalGridFilters(state),
         },
         getPagination(state, {page, size})
         ),
@@ -321,7 +327,7 @@ const updateFilterFunc = (store) => ({update = {}, append} = {}) => {
     // If an advanced filter is present it's filterFields should be composed with the action'
     const {id} = selectedLayerSelector(store.getState());
     const filterObj = {...get(store.getState(), `featuregrid.advancedFilters["${id}"]`)};
-    if (filterObj) {
+    if (filterObj && !isEmpty(filterObj)) {
         // TODO: make append with advanced filters work
         const attributesFilter = getAttributeFilters(store.getState()) || {};
         const columnsFilters = reduce(attributesFilter, (cFilters, value, attribute) => {
@@ -337,7 +343,7 @@ const updateFilterFunc = (store) => ({update = {}, append} = {}) => {
             spatialFieldOperator = columnsFilters.spatialFieldOperator;
         }
         const composedFilterFields = composeAttributeFilters([filterObj, columnsFilters], "AND", spatialFieldOperator);
-        const filter = {...filterObj, ...composedFilterFields};
+        const filter = { ...filterObj, ...composedFilterFields };
         return updateQuery({updates: filter, reason: update?.type});
     }
     let u = update;
@@ -390,7 +396,7 @@ export const featureGridStartupQuery = (action$, store) =>
 export const featureGridSort = (action$, store) =>
     action$.ofType(SORT_BY)
         .switchMap( ({sortBy, sortOrder}) =>
-            Rx.Observable.of( query(
+        Rx.Observable.of( query(
                 wfsURL(store.getState()),
                 addPagination({
                     ...wfsFilter(store.getState()),
@@ -402,7 +408,7 @@ export const featureGridSort = (action$, store) =>
             ))
                 .merge(action$.ofType(QUERY_RESULT)
                     .map((ra) => featureGridQueryResult(get(ra, "result.features", []), [get(ra, "filterObj.pagination.startIndex")]))
-                    .takeUntil(action$.ofType(QUERY_ERROR))
+                                        .takeUntil(action$.ofType(QUERY_ERROR))
                     .take(1)
                 )
         );
@@ -511,7 +517,7 @@ export const enableGeometryFilterOnEditMode = (action$, store) =>
         .filter(() => modeSelector(store.getState()) === MODES.EDIT)
         .switchMap(() => {
             const currentFilter = find(getAttributeFilters(store.getState()), f => f.type === 'geometry') || {};
-            return currentFilter.value ? Rx.Observable.empty() : Rx.Observable.of(updateFilter({
+                        return currentFilter.value ? Rx.Observable.empty() : Rx.Observable.of(updateFilter({
                 attribute: findGeometryProperty(describeSelector(store.getState())).name,
                 enabled: true,
                 type: "geometry"
@@ -681,7 +687,7 @@ export const featureGridChangePage = (action$, store) =>
             .merge(action$.ofType(QUERY_RESULT)
                 .map((ra) => {
                     let features = get(ra, "result.features", []);
-                    const multipleSelect = multiSelect(store.getState());
+                                        const multipleSelect = multiSelect(store.getState());
                     const geometryFilter = find(getAttributeFilters(store.getState()), f => f.type === 'geometry');
                     if (multipleSelect && geometryFilter?.enabled) {
                         features = selectedFeaturesSelector(store.getState());
@@ -1326,13 +1332,42 @@ export const resetViewportFilter = (action$, store) =>
             : Rx.Observable.empty();
     });
 
+    export const storeRestrictedAreaFilter = (action$, store) => 
+    action$.ofType(SET_RESTRICTED_AREA)
+        .switchMap((action) => {
+            const geometryFilter = find(getAttributeFilters(store.getState()), f => f.type === 'geometry') || {};
+            const areaFilter = restrictedAreaFilter(store.getState());
+            return Rx.Observable.of(
+                launchUpdateFilterFunc(updateFilter({
+                    ...geometryFilter,
+                    type: 'geometry',
+                    operator: "AND",
+                    attribute: geometryFilter.attribute || get(spatialFieldSelector(store.getState()), 'attribute'),
+                    value: areaFilter.spatialField
+                }))
+            )  
+        })
+
 export const requestRestrictedArea = (action$, store) => 
-    action$.ofType(SET_UP)
+    action$.ofType(OPEN_FEATURE_GRID, LOGIN_SUCCESS)
+        .filter(() =>
+            !isAdminUserSelector(store.getState())
+            && isLoggedIn(store.getState())
+            && !isEmpty(restrictedAreaUrlSelector(store.getState()))
+        )
         .switchMap((action) => {
             const url = action.url || restrictedAreaUrlSelector(store.getState());
             return Rx.Observable.defer(() => fetch(url).then(r => r?.json?.()))
                 .switchMap(result => {
-                    console.log(result);
-                    Rx.Observable.of(setRestrictedArea(result))
+                    return Rx.Observable.of(
+                        setRestrictedArea(result),
+                    )
                 })
-    })
+        })
+export const resetRestrictedArea = (action$, store) => 
+    action$.ofType(LOGOUT, CLOSE_FEATURE_GRID)
+        .filter((a) => !isEmpty(restrictedAreaUrlSelector(store.getState())))
+        .switchMap(() => Rx.Observable.of(
+            setRestrictedArea({})
+        ))
+        

@@ -1725,6 +1725,7 @@
                 "syncOnMap": "Synchroniseer kaart met filter",
                 "enableTimeSync": "Synchroniseer met de geselecteerde tijd of tijdsinterval",
                 "disableTimeSync": "Synchroniseer niet met de geselecteerde tijd of interval",
+                "restrictedByArea": "Visning begrænset af et område",
                 "createNewChart": "Maak een grafiek voor de geselecteerde laag",
                 "enableSnapping": "Activeer snapping",
                 "disableSnapping": "Deactiveer snapping",
