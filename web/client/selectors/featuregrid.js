@@ -234,10 +234,12 @@ export const viewportFilter = createShallowSelectorCreator(isEqual)(
     isFilterByViewportSupported,
     (viewportFilterIsActive, box, projection, spatialField = [], describeLayer, viewportFilterIsSupported) => {
         const attribute = findGeometryProperty(describeLayer)?.name;
-        const existingFilter = spatialField?.operation ? [spatialField] : spatialField;
+        let existingFilter = spatialField?.operation ? [spatialField] : spatialField;
+        existingFilter = existingFilter.filter(f => !f.viewport && !f.restrictedArea);
+
         let vf = viewportFilterIsActive && viewportFilterIsSupported ? {
             spatialField: [
-                ...existingFilter.filter(f => !f.viewport && !f.restrictedArea),
+                ...existingFilter,
                 {
                     geometry: {
                         ...bboxToFeatureGeometry(box.bounds),
@@ -249,7 +251,9 @@ export const viewportFilter = createShallowSelectorCreator(isEqual)(
                     viewport: true
                 }
             ]
-        } : {};
+        } : {
+            spatialField: existingFilter
+        };
         return vf;
     }
 );

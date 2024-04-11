@@ -356,32 +356,7 @@
                     }
                 }
             }, "Home",
-            {
-              "name": "FeatureEditor",
-              "cfg": {
-                "editingAttributesAllowedGroups": ["attributesEditor"],
-                "editingAttributesAllowedRoles": ["ATTRIBUTES_EDITOR"],
-                "editingAllowedRoles": [
-                  "ADMIN",
-                  "USER"
-                ],
-                "customEditorsOptions": {
-                  "rules": [
-                    {
-                      "regex": {
-                        "attribute": "nom",
-                        "typeName": "^tabou:commune_emprise$"
-                      },
-                      "allowEdit": false,
-                      "editor": "FromHeaderEditor",
-                      "editorProps": {
-                        "headerField": "name"
-                      }
-                    }
-                  ]
-                }
-              }
-            },
+            "FeatureEditor",
             "LayerDownload",
             {
               "name": "QueryPanel",
