@@ -327,7 +327,7 @@ const updateFilterFunc = (store) => ({update = {}, append} = {}) => {
     // If an advanced filter is present it's filterFields should be composed with the action'
     const {id} = selectedLayerSelector(store.getState());
     const filterObj = {...get(store.getState(), `featuregrid.advancedFilters["${id}"]`)};
-    if (filterObj && !isEmpty(filterObj)) {
+        if (filterObj && !isEmpty(filterObj)) {
         // TODO: make append with advanced filters work
         const attributesFilter = getAttributeFilters(store.getState()) || {};
         const columnsFilters = reduce(attributesFilter, (cFilters, value, attribute) => {
@@ -1332,22 +1332,6 @@ export const resetViewportFilter = (action$, store) =>
             : Rx.Observable.empty();
     });
 
-    export const storeRestrictedAreaFilter = (action$, store) => 
-    action$.ofType(SET_RESTRICTED_AREA)
-        .switchMap((action) => {
-            const geometryFilter = find(getAttributeFilters(store.getState()), f => f.type === 'geometry') || {};
-            const areaFilter = restrictedAreaFilter(store.getState());
-            return Rx.Observable.of(
-                launchUpdateFilterFunc(updateFilter({
-                    ...geometryFilter,
-                    type: 'geometry',
-                    operator: "AND",
-                    attribute: geometryFilter.attribute || get(spatialFieldSelector(store.getState()), 'attribute'),
-                    value: areaFilter.spatialField
-                }))
-            )  
-        })
-
 export const requestRestrictedArea = (action$, store) => 
     action$.ofType(OPEN_FEATURE_GRID, LOGIN_SUCCESS)
         .filter(() =>
@@ -1361,6 +1345,7 @@ export const requestRestrictedArea = (action$, store) =>
                 .switchMap(result => {
                     return Rx.Observable.of(
                         setRestrictedArea(result),
+                        changePage(0)
                     )
                 })
         })

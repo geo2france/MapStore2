@@ -272,7 +272,7 @@ export const gridUpdateToQueryUpdate = ({attribute, operator, value, type, filte
         };
     }
 
-    return {
+        return {
         ...oldFilterObj,
         groupFields: cleanGroupFields.concat([
             {
