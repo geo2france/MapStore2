@@ -240,7 +240,12 @@
               "clearCustomizationConfirm": "Voulez-vous vraiment supprimer les personnalisations ?",
               "error":  "Échec de la récupération des champs"
             },
-            "disableFeaturesEditing": "Désactiver la modification sur la table attributaire"
+            "disableFeaturesEditing": "Désactiver la modification sur la table attributaire",
+            "disabledGeometryEditing": {
+                "label": "Désactiver la modification sur la carte",
+                "tooltip": "Permettra uniquement la modification des champs de la table attributaire"
+            }
+            
         },
          "localizedInput": {
           "localize": "Localiser ce texte...",

@@ -11,7 +11,7 @@ import TSplitButtonComp from "./TSplitButton";
 import Spinner from "react-spinkit";
 import Select from "react-select";
 import { MapLibraries } from '../../../../utils/MapTypeUtils';
-import { areLayerFeaturesEditable } from "../../../../utils/FeatureGridUtils";
+import { areLayerFeaturesEditable, areLayerGeomEditable } from "../../../../utils/FeatureGridUtils";
 
 const TButton = withHint(TButtonComp);
 const TSplitButton = withHint(TSplitButtonComp);
@@ -61,20 +61,20 @@ const standardButtons = {
         visible={mode === "EDIT" && !hasChanges && !hasNewFeatures}
         onClick={events.switchViewMode}
         glyph="arrow-left"/>),
-    addFeature: ({disabled, mode, hasNewFeatures, hasChanges, hasSupportedGeometry = true, events = {}}) => (<TButton
+    addFeature: ({fields, disabled, mode, hasNewFeatures, hasChanges, hasSupportedGeometry = true, events = {}, layer}) => (<TButton
         id="add-feature"
         keyProp="add-feature"
         tooltipId="featuregrid.toolbar.addNewFeatures"
         disabled={disabled}
-        visible={mode === "EDIT" && !hasNewFeatures && !hasChanges && hasSupportedGeometry}
+        visible={mode === "EDIT" && !hasNewFeatures && !hasChanges && hasSupportedGeometry && areLayerGeomEditable(layer, fields)}
         onClick={events.createFeature}
         glyph="row-add"/>),
-    drawFeature: ({isDrawing = false, disabled, isSimpleGeom, mode, selectedCount, hasGeometry, hasSupportedGeometry = true, events = {}}) => (<TButton
+    drawFeature: ({isDrawing = false, disabled, isSimpleGeom, mode, selectedCount, hasGeometry, hasSupportedGeometry = true, events = {}, layer}) => (<TButton
         id="draw-feature"
         keyProp="draw-feature"
         tooltipId={getDrawFeatureTooltip(isDrawing, isSimpleGeom)}
         disabled={disabled}
-        visible={mode === "EDIT" && selectedCount === 1 && (!hasGeometry || hasGeometry && !isSimpleGeom) && hasSupportedGeometry}
+        visible={mode === "EDIT" && selectedCount === 1 && (!hasGeometry || hasGeometry && !isSimpleGeom) && hasSupportedGeometry && (layer) && areLayerGeomEditable(layer)}
         onClick={events.startDrawingFeature}
         active={isDrawing}
         glyph="pencil-add"/>),
@@ -103,12 +103,12 @@ const standardButtons = {
         visible={mode === "EDIT" && hasChanges || hasNewFeatures}
         onClick={events.clearFeatureEditing}
         glyph="remove-square"/>),
-    deleteGeometry: ({disabled, mode, hasGeometry, selectedCount, hasSupportedGeometry = true, events = {}}) => (<TButton
+    deleteGeometry: ({disabled, mode, hasGeometry, selectedCount, hasSupportedGeometry = true, events = {}, layer}) => (<TButton
         id="delete-geometry"
         keyProp="delete-geometry"
         tooltipId="featuregrid.toolbar.deleteGeometry"
         disabled={disabled}
-        visible={mode === "EDIT" && hasGeometry && selectedCount === 1 && hasSupportedGeometry}
+        visible={mode === "EDIT" && hasGeometry && selectedCount === 1 && hasSupportedGeometry && areLayerGeomEditable(layer)}
         onClick={events.deleteGeometry}
         glyph="polygon-trash"/>),
     gridSettings: ({disabled, isColumnsOpen, selectedCount, mode, events = {}}) => (<TButton
@@ -170,11 +170,11 @@ const standardButtons = {
         active={timeSync}
         onClick={() => events.setTimeSync && events.setTimeSync(!timeSync)}
         glyph="time" />),
-    snapToFeature: ({snapping, availableSnappingLayers = [], isSnappingLoading, snappingConfig, mode, mapType, editorHeight, pluginCfg, events = {}}) => (<TSplitButton
+    snapToFeature: ({snapping, availableSnappingLayers = [], isSnappingLoading, snappingConfig, mode, mapType, editorHeight, pluginCfg, events = {}, layer}) => (<TSplitButton
         id="snap-button"
         keyProp="snap-button"
         tooltipId={snapping ? "featuregrid.toolbar.disableSnapping" : "featuregrid.toolbar.enableSnapping"}
-        visible={mode === "EDIT" && (pluginCfg?.snapTool ?? true) && mapType === MapLibraries.OPENLAYERS}
+        visible={mode === "EDIT" && (pluginCfg?.snapTool ?? true) && mapType === MapLibraries.OPENLAYERS && areLayerGeomEditable(layer)}
         onClick={() => {
             events.toggleSnapping && events.toggleSnapping(!snapping);
         }}

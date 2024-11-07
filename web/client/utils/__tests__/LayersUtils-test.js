@@ -1377,6 +1377,15 @@ describe('LayersUtils', () => {
                     expect(l.disableFeaturesEditing).toBeTruthy();
                 }
             ],
+            // save read only attribute
+            [
+                {
+                    disabledGeometryEditing: true
+                },
+                l => {
+                    expect(l.disabledGeometryEditing).toBeTruthy();
+                }
+            ],
             [
                 {
                     pointCloudShading: {

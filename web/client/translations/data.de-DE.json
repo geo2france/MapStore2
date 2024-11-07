@@ -240,7 +240,11 @@
               "clearCustomizationConfirm": "Möchten Sie wirklich alle Anpassungen entfernen?",
               "error": "Die Felder konnten nicht automatisch geladen werden"
             },
-            "disableFeaturesEditing": "Deaktivieren Sie die Bearbeitung der Attributtabelle"
+            "disableFeaturesEditing": "Deaktivieren Sie die Bearbeitung der Attributtabelle",
+            "disabledGeometryEditing": {
+                "label": "Funktionen deaktivieren Kartenausgabe",
+                "tooltip": "Ermöglicht nur die Bearbeitung von Attributen"
+              }
         },
         "localizedInput": {
           "localize": "Diesen Text lokalisieren...",

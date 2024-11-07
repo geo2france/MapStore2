@@ -392,3 +392,7 @@ export const supportsFeatureEditing = (layer) => includes(supportedEditLayerType
  * @returns {boolean} flag
  */
 export const areLayerFeaturesEditable = (layer) =>  !layer?.disableFeaturesEditing && supportsFeatureEditing(layer);
+
+export const areLayerGeomEditable = (layer, fields) => {
+    return areLayerFeaturesEditable(layer) && !layer.disabledGeometryEditing
+};

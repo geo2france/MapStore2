@@ -235,7 +235,11 @@
               "clearCustomizationConfirm": "Bent u zeker dat u alle aanpassingen wil ongedaan maken?",
               "error": "Het is niet mogelijk om de attributen automatisch in te laden"
             },
-            "disableFeaturesEditing": "Deactiveer editeerfunctionaliteit in attributentabel"
+            "disableFeaturesEditing": "Deactiveer editeerfunctionaliteit in attributentabel",
+            "disabledGeometryEditing": {
+                "label": "Eigenschappenkaarteditie uitschakelen",
+                "tooltip": "Alleen attribuutbewerking inschakelen"
+            }
         },
         "localizedInput": {
           "localize": "Vertaal deze tekst...",

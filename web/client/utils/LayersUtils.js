@@ -723,6 +723,7 @@ export const saveLayer = (layer) => {
     isString(layer.rowViewer) ? { rowViewer: layer.rowViewer } : {},
     !isNil(layer.forceProxy) ? { forceProxy: layer.forceProxy } : {},
     !isNil(layer.disableFeaturesEditing) ? { disableFeaturesEditing: layer.disableFeaturesEditing } : {},
+    !isNil(layer.disabledGeometryEditing) ? { disabledGeometryEditing: layer.disabledGeometryEditing } : {},
     layer.pointCloudShading ? { pointCloudShading: layer.pointCloudShading } : {},
     !isNil(layer.sourceMetadata) ? { sourceMetadata: layer.sourceMetadata } : {});
 };

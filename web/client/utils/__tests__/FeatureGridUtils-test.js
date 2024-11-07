@@ -443,6 +443,9 @@ describe('FeatureGridUtils', () => {
         it("test areLayerFeaturesEditable with valid layer type and disableFeaturesEditing", () => {
             expect(areLayerFeaturesEditable({type: "wms", disableFeaturesEditing: true})).toBeFalsy();
         });
+        it("test areLayerGeomEditable with valid layer tyoe and disabled disabledGeometryEditing", () => {
+            expect(areLayerGeomEditable({type: "wms", disabledGeometryEditing: true})).toBeFalsy();
+        })
         it("test areLayerFeaturesEditable with invalid layer type", () => {
             expect(areLayerFeaturesEditable({type: "wmts"})).toBeFalsy();
         });

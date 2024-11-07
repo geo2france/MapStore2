@@ -240,7 +240,12 @@
               "clearCustomizationConfirm": "¿Está seguro de que desea borrar la personalización de los campos?",
               "error": "Error al recuperar los campos"
             },
-            "disableFeaturesEditing": "Deshabilitar la edición en la tabla de atributos"
+            "disableFeaturesEditing": "Deshabilitar la edición en la tabla de atributos",
+            "disabledGeometryEditing": {
+                "label": "Desactivar características mapa edición",
+                "tooltip": "Sólo permite la edición de atributos"
+            }
+
         },
         "localizedInput": {
           "localize": "Localizar cadena...",

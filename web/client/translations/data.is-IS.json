@@ -204,7 +204,11 @@
         "clearCustomizationConfirm": "Are you sure you want to remove all customizations?",
         "error": "It was not possible to automatically load the fields"
       },
-      "disableFeaturesEditing": "Disable editing on Attribute table"
+      "disableFeaturesEditing": "Disable editing on Attribute table",
+      "disabledGeometryEditing": {
+        "label": "Disable features map edition",
+        "tooltip": "Enables attribute editing only"
+      }
     },
     "localizedInput": {
       "localize": "Localize this text...",

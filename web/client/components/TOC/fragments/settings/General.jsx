@@ -14,7 +14,7 @@ import LocalizedInput from '../../../misc/LocalizedInput';
 
 import Select from 'react-select';
 import Spinner from 'react-spinkit';
-
+import InfoPopover from '../../../widgets/widget/InfoPopover';
 import Message from '../../../I18N/Message';
 import LayerNameEditField from './LayerNameEditField';
 import { getMessageById } from '../../../../utils/LocaleUtils';
@@ -173,6 +173,14 @@ class General extends React.Component {
                             onChange={(event) => this.props.onChange("disableFeaturesEditing", event.target.checked)}
                         >
                             <Message msgId="layerProperties.disableFeaturesEditing"/>
+                        </Checkbox>
+                        <Checkbox
+                            data-qa="general-edit-only-attribute"
+                            key="disabledGeometryEditing"
+                            checked={this.props.element?.disabledGeometryEditing === undefined ? false : this.props.element?.disabledGeometryEditing}
+                            onChange={(event) => this.props.onChange("disabledGeometryEditing", event.target.checked)}
+                        >
+                            <Message msgId="layerProperties.disabledGeometryEditing.label"/> <InfoPopover text={<Message msgId="layerProperties.disabledGeometryEditing.tooltip" />} />
                         </Checkbox>
                     </FormGroup>}
 
