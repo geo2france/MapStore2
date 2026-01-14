@@ -127,7 +127,7 @@ module.exports = (...args) => mapArgumentsToObject(args, ({
     mode: prod ? "production" : "development",
     optimization: {
         nodeEnv: false, // we are already using DefinePlugin for process.env.NODE_ENV so we should set this to false to avoid conflicts
-        minimize: !!prod,
+        minimize: false,
         ...(prod && {
             minimizer: [
                 // For webpack@5 you can use the `...` syntax to extend existing minimizers (i.e. `terser-webpack-plugin`)
@@ -141,7 +141,7 @@ module.exports = (...args) => mapArgumentsToObject(args, ({
         path: paths.dist,
         publicPath,
         filename: "[name].js",
-        chunkFilename: prod ? (paths.chunks || "") + "[name].[hash].chunk.js" : (paths.chunks || "") + "[name].js"
+        chunkFilename: (paths.chunks || "") + "[name].js"
     },
     plugins: [
         new CopyWebpackPlugin([
@@ -151,17 +151,17 @@ module.exports = (...args) => mapArgumentsToObject(args, ({
             { from: path.join(paths.base, 'node_modules', 'react-nouislider', 'example'), to: path.join(paths.dist, "react-nouislider", "example") }
         ]),
         new LoaderOptionsPlugin({
-            debug: !prod,
+            debug: true,
             options: {
                 context: paths.base
             }
         }),
         new DefinePlugin({
-            "__DEVTOOLS__": !prod
+            "__DEVTOOLS__": true
         }),
         new DefinePlugin({
             'process.env': {
-                'NODE_ENV': prod ? '"production"' : '""'
+                'NODE_ENV': '""'
             }
         }),
         new DefinePlugin({ '__MAPSTORE_PROJECT_CONFIG__': JSON.stringify(projectConfig) }),
@@ -183,7 +183,7 @@ module.exports = (...args) => mapArgumentsToObject(args, ({
         new NormalModuleReplacementPlugin(/proj4$/, path.join(paths.framework, "libs", "proj4")),
         new NoEmitOnErrorsPlugin()]
         .concat(castArray(plugins))
-        .concat(prod ? prodPlugins : devPlugins),
+        .concat(devPlugins),
     resolve: {
         fallback: {
             timers: false,
@@ -311,7 +311,7 @@ module.exports = (...args) => mapArgumentsToObject(args, ({
         ...DEV_SERVER,
         proxy: proxy || DEV_SERVER && DEV_SERVER.proxy // proxy has priority over devServer proxy configuration
     },
-    devtool: !prod ? 'eval' : devtool || undefined
+    devtool: 'eval'
 })
 );
 

@@ -23,7 +23,7 @@ module.exports = require('./buildConfig')({
     themeEntries,
     paths,
     plugins: [extractThemesPlugin, ModuleFederationPlugin],
-    prod: true,
+    prod: false,
     prodPlugins: [
         new HtmlWebpackPlugin({
             template: path.join(paths.framework, 'indexTemplate.html'),
