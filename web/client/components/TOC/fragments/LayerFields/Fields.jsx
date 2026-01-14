@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ControlLabel, FormControl, FormGroup, Alert, Glyphicon, Button } from 'react-bootstrap';
+import { Checkbox, ControlLabel, FormControl, FormGroup, Alert, Glyphicon, Button } from 'react-bootstrap';
 import Message from '../../../I18N/Message';
 import LoadingSpinner from '../../../misc/LoadingSpinner';
 import LocalizedInput from '../../../misc/LocalizedInput';
@@ -73,6 +73,9 @@ const Fields = ({fields = [], onLoadFields = () => {}, onChange = () => {}, onCl
                 <FormGroup className="layer-field-type">
                     <ControlLabel><Message msgId="layerProperties.fields.type"/></ControlLabel>
                 </FormGroup>
+                <FormGroup className="layer-field-editors">
+                    <ControlLabel>Editable</ControlLabel>
+                </FormGroup>
             </div>
         </div>}
         footer={<div key="row-footer" className="layer-fields-footer">
@@ -81,17 +84,33 @@ const Fields = ({fields = [], onLoadFields = () => {}, onChange = () => {}, onCl
         </div>}
     >
         {fields
-            .filter(({type}) => !isGeometryType(type)) // exclude geometry fields
-            .map(({name, alias, type}) => {
+            // .filter(({type}) => !isGeometryType(type)) // exclude geometry fields
+            .map(({name, alias, type, editable = true, allowedEditorsRoles = ""}) => {
                 return (<div key={`field-${name}`} className="layer-fields-row">
                     <FormGroup className="layer-field-name">
-                        <FormControl disabled value={name} />
+                        {name}
                     </FormGroup>
                     <FormGroup className="layer-field-alias">
-                        <LocalizedInput disabled={loading} onChange={(value) => onChange(name, "alias", value)} value={alias} currentLocale={currentLocale} />
+                        {   isGeometryType(type) ? <LocalizedInput disabled /> :
+                            <LocalizedInput disabled={loading} onChange={(value) => onChange(name, "alias", value)} value={alias} currentLocale={currentLocale} />
+                        }
                     </FormGroup>
                     <FormGroup className="layer-field-type">
                         <FormControl disabled value={type}/>
+                    </FormGroup>
+                    <FormGroup className="layer-field-editors">
+                        {
+                            isGeometryType(type) ?
+                            <FormControl value={allowedEditorsRoles} onChange={({target}) => onChange(name, "allowedEditorsRoles", target.value, true)}/>
+                            :
+                            <Checkbox
+                                key={"editable-" + name}
+                                checked={editable === false}
+                                onChange={({target}) => onChange(name, "editable", !editable)}
+                            >
+                                <Message msgId="layerProperties.disableFeaturesEditing"/>
+                            </Checkbox>
+                        }
                     </FormGroup>
                 </div>);
             })}
