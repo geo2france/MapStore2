@@ -13,7 +13,7 @@ import axios from '../libs/ajax';
 import bbox from '@turf/bbox';
 import booleanIntersects from "@turf/boolean-intersects";
 import { fidFilter } from '../utils/ogc/Filter/filter';
-import { getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages, getAttributesFromUserInfos  } from '../utils/FeatureGridUtils';
+import {createChangesTransaction, getDefaultFeatureProjection, getPagesToLoad, gridUpdateToQueryUpdate, updatePages, getAttributesFromUserInfos  } from '../utils/FeatureGridUtils';
 
 import assign from 'object-assign';
 import {
